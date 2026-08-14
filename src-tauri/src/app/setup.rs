@@ -27,20 +27,19 @@ pub fn set_system_tray(
     }
 
     // Menu events are broadcast to every handler in Tauri v2, so the tray item
-    // must not share the "new_window" id with the app menu accelerator
-    // (Cmd/Ctrl+N), or one click opens two windows.
     let new_window = MenuItemBuilder::with_id("tray_new_window", "New Window").build(app)?;
+    let check_update = MenuItemBuilder::with_id("check_update", "Check for Updates (检查更新)").build(app)?;
     let hide_app = MenuItemBuilder::with_id("hide_app", "Hide").build(app)?;
     let show_app = MenuItemBuilder::with_id("show_app", "Show").build(app)?;
     let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
 
     let menu = if allow_multi_window {
         MenuBuilder::new(app)
-            .items(&[&new_window, &hide_app, &show_app, &quit])
+            .items(&[&new_window, &check_update, &hide_app, &show_app, &quit])
             .build()?
     } else {
         MenuBuilder::new(app)
-            .items(&[&hide_app, &show_app, &quit])
+            .items(&[&check_update, &hide_app, &show_app, &quit])
             .build()?
     };
 
@@ -53,6 +52,11 @@ pub fn set_system_tray(
         .on_menu_event(move |app, event| match event.id().as_ref() {
             "tray_new_window" => {
                 open_additional_window_safe(app);
+            }
+            "check_update" => {
+                if let Some(window) = app.get_webview_window("pake") {
+                    crate::app::backend::perform_update_check(&window, true);
+                }
             }
             "hide_app" => {
                 // Hide every webview (main + multi-window clones), not only "pake".

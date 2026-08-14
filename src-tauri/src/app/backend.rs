@@ -54,8 +54,8 @@ fn find_cached_dsh_script() -> Option<PathBuf> {
     None
 }
 
-/// 24-hour background check for official DeepSeek Harness upstream updates
-pub fn check_and_update_engine_24h(window: &WebviewWindow) {
+/// Perform check for both DSH-UI Shell (GitHub) and DeepSeek Engine (npm)
+pub fn perform_update_check(window: &WebviewWindow, force: bool) {
     let win = window.clone();
     tauri::async_runtime::spawn(async move {
         let state_dir = std::env::var("LOCALAPPDATA").unwrap_or_else(|_| ".".to_string());
@@ -66,13 +66,14 @@ pub fn check_and_update_engine_24h(window: &WebviewWindow) {
             .unwrap_or_default()
             .as_secs();
 
-        // 1. Check if 24 hours (86400 seconds) have passed since last check
-        if let Ok(content) = std::fs::read_to_string(&state_file) {
-            if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
-                if let Some(last_check) = json.get("last_check").and_then(|v| v.as_u64()) {
-                    if now < last_check + 86400 {
-                        // Checked within 24 hours, skip network request for lightning fast startup
-                        return;
+        // 1. If not forced, check 24h throttling
+        if !force {
+            if let Ok(content) = std::fs::read_to_string(&state_file) {
+                if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
+                    if let Some(last_check) = json.get("last_check").and_then(|v| v.as_u64()) {
+                        if now < last_check + 86400 {
+                            return;
+                        }
                     }
                 }
             }
@@ -84,18 +85,27 @@ pub fn check_and_update_engine_24h(window: &WebviewWindow) {
         }
         let _ = std::fs::write(&state_file, format!(r#"{{"last_check": {}}}"#, now));
 
-        // 2. Fetch latest official version from npm registry asynchronously
+        // 2. Query GitHub Releases for DSH-UI Shell updates
         let mut cmd = std::process::Command::new("node");
         cmd.args(&["-e", r#"
             const https = require('https');
-            const req = https.get('https://registry.npmjs.org/@deepseek-ai/dsh/latest', { timeout: 3000 }, res => {
+            const options = {
+                headers: { 'User-Agent': 'DSH-UI-App' },
+                timeout: 4000
+            };
+            const req = https.get('https://api.github.com/repos/xtxo/dsh-ui/releases/latest', options, res => {
                 let data = '';
                 res.on('data', chunk => data += chunk);
                 res.on('end', () => {
                     try {
                         const json = JSON.parse(data);
-                        if (json && json.version) {
-                            process.stdout.write(json.version);
+                        if (json && json.tag_name) {
+                            process.stdout.write(JSON.stringify({
+                                tag: json.tag_name,
+                                name: json.name || json.tag_name,
+                                url: json.html_url || 'https://github.com/xtxo/dsh-ui/releases/latest',
+                                body: (json.body || '').substring(0, 300)
+                            }));
                         }
                     } catch(e) {}
                 });
@@ -108,22 +118,71 @@ pub fn check_and_update_engine_24h(window: &WebviewWindow) {
 
         if let Ok(output) = cmd.output() {
             if output.status.success() {
-                let latest_ver = String::from_utf8_lossy(&output.stdout).trim().to_string();
-                if !latest_ver.is_empty() {
-                    println!("[DeepSeek Harness] Upstream official version check (24h): v{}", latest_ver);
-                    let js_code = format!(
-                        r#"
-                        if (typeof window !== 'undefined' && window.localStorage) {{
-                            const stored = window.localStorage.getItem('dsh_official_ver');
-                            if (stored && stored !== '{0}') {{
-                                console.log('[DSH-UI] New official version detected: v{0}');
-                            }}
-                            window.localStorage.setItem('dsh_official_ver', '{0}');
-                        }}
-                        "#,
-                        latest_ver
-                    );
-                    let _ = win.eval(&js_code);
+                let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                if let Ok(release) = serde_json::from_str::<serde_json::Value>(&stdout) {
+                    if let Some(tag) = release.get("tag").and_then(|v| v.as_str()) {
+                        let current_tag = "v0.1.3";
+                        if tag != current_tag && !tag.is_empty() {
+                            println!("[DSH-UI] New client shell release found on GitHub: {}", tag);
+                            let url = release.get("url").and_then(|v| v.as_str()).unwrap_or("https://github.com/xtxo/dsh-ui/releases/latest");
+                            let name = release.get("name").and_then(|v| v.as_str()).unwrap_or(tag);
+                            
+                            // Inject in-app update notification modal into webview
+                            let js_code = format!(
+                                r#"
+                                (function() {{
+                                    if (document.getElementById('dsh-update-banner')) return;
+                                    const banner = document.createElement('div');
+                                    banner.id = 'dsh-update-banner';
+                                    banner.style.cssText = `
+                                        position: fixed;
+                                        bottom: 24px;
+                                        right: 24px;
+                                        background: rgba(15, 23, 42, 0.95);
+                                        border: 1px solid rgba(77, 107, 254, 0.6);
+                                        border-radius: 12px;
+                                        padding: 16px 20px;
+                                        color: #ffffff;
+                                        box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(77,107,254,0.3);
+                                        z-index: 999999;
+                                        display: flex;
+                                        flex-direction: column;
+                                        gap: 10px;
+                                        max-width: 360px;
+                                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                                        backdrop-filter: blur(12px);
+                                        animation: dshSlideUp 0.3s ease;
+                                    `;
+                                    banner.innerHTML = `
+                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                            <div style="font-weight: 700; font-size: 14px; color: #60a5fa; display: flex; align-items: center; gap: 6px;">
+                                                <span>✨ 发现 DSH-UI 新版本</span>
+                                                <span style="background: rgba(77,107,254,0.3); padding: 1px 6px; border-radius: 4px; font-size: 11px;">{tag}</span>
+                                            </div>
+                                            <button onclick="this.parentElement.parentElement.remove()" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 16px; line-height: 1;">&times;</button>
+                                        </div>
+                                        <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
+                                            检测到客户端外壳已发布新版本 <strong>{name}</strong>，建议立即升级体验最新功能与修复。
+                                        </div>
+                                        <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                            <a href="{url}" target="_blank" style="background: #2563eb; color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; flex: 1; transition: background 0.2s;">
+                                                🚀 立即下载更新
+                                            </a>
+                                            <button onclick="this.parentElement.parentElement.remove()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                                                稍后提醒
+                                            </button>
+                                        </div>
+                                    `;
+                                    document.body.appendChild(banner);
+                                }})();
+                                "#,
+                                tag = tag,
+                                name = name,
+                                url = url
+                            );
+                            let _ = win.eval(&js_code);
+                        }
+                    }
                 }
             }
         }
@@ -133,8 +192,8 @@ pub fn check_and_update_engine_24h(window: &WebviewWindow) {
 pub fn start_backend_service_if_needed(_app_handle: &AppHandle, window: WebviewWindow) {
     let target_port: u16 = 3080;
 
-    // Trigger 24-hour non-blocking update check
-    check_and_update_engine_24h(&window);
+    // Trigger 24-hour non-blocking update check for both shell & engine
+    perform_update_check(&window, false);
 
     if is_backend_running(target_port) {
         println!("[DeepSeek Harness] Backend is already running on port {}", target_port);
