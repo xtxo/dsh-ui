@@ -42,7 +42,7 @@
       position: relative;
     }
 
-    /* Ambient Fluid Background */
+    /* Ambient Background */
     .ambient-canvas {
       position: fixed;
       top: 0;
@@ -56,9 +56,9 @@
 
     .ambient-glow-1 {
       position: absolute;
-      width: 700px;
-      height: 700px;
-      background: radial-gradient(circle, rgba(29, 97, 254, 0.22) 0%, rgba(29, 97, 254, 0) 70%);
+      width: 750px;
+      height: 750px;
+      background: radial-gradient(circle, rgba(29, 97, 254, 0.25) 0%, rgba(29, 97, 254, 0) 70%);
       top: -150px;
       right: -100px;
       filter: blur(60px);
@@ -66,9 +66,9 @@
 
     .ambient-glow-2 {
       position: absolute;
-      width: 800px;
-      height: 800px;
-      background: radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(14, 165, 233, 0) 70%);
+      width: 850px;
+      height: 850px;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(14, 165, 233, 0) 70%);
       bottom: -200px;
       left: -150px;
       filter: blur(80px);
@@ -80,9 +80,9 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at 75% 30%, rgba(30, 64, 175, 0.18) 0%, transparent 60%),
+      background: radial-gradient(circle at 75% 30%, rgba(30, 64, 175, 0.2) 0%, transparent 60%),
                   radial-gradient(circle at 20% 80%, rgba(15, 23, 42, 0.9) 0%, transparent 80%);
-      opacity: 0.9;
+      opacity: 0.95;
     }
 
     /* Header */
@@ -93,7 +93,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 24px 60px;
-      max-width: 1360px;
+      max-width: 1440px;
       margin: 0 auto;
       width: 100%;
     }
@@ -196,21 +196,21 @@
     main {
       position: relative;
       z-index: 1;
-      max-width: 1360px;
+      max-width: 1440px;
       margin: 0 auto;
-      padding: 40px 60px 80px;
+      padding: 30px 60px 80px;
       width: 100%;
       flex: 1;
     }
 
-    /* Hero Section */
+    /* Hero Section with Big Preview on the Right */
     .hero {
       display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 48px;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 50px;
       align-items: center;
-      padding-top: 20px;
-      margin-bottom: 70px;
+      padding-top: 10px;
+      margin-bottom: 90px;
     }
 
     .hero-tag {
@@ -238,14 +238,15 @@
       font-size: 16px;
       line-height: 1.7;
       color: var(--text-muted);
-      margin-bottom: 34px;
-      max-width: 600px;
+      margin-bottom: 32px;
+      max-width: 560px;
     }
 
     .hero-cta-group {
       display: flex;
       flex-direction: column;
       gap: 16px;
+      margin-bottom: 24px;
     }
 
     .primary-downloads-row {
@@ -255,7 +256,7 @@
       align-items: center;
     }
 
-    /* Rounded White Buttons as shown in uploaded reference */
+    /* Rounded White Download Buttons */
     .btn-download-white {
       display: inline-flex;
       align-items: center;
@@ -310,127 +311,107 @@
       color: #ffffff;
     }
 
-    /* Terminal Mockup Card matching screenshot */
-    .terminal-card {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(20px);
-      overflow: hidden;
-    }
-
-    .terminal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .tab-group {
-      display: flex;
-      gap: 6px;
-    }
-
-    .term-tab {
-      background: transparent;
-      border: none;
-      color: var(--text-dim);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 6px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .term-tab.active {
-      background: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-    }
-
-    .window-dots {
-      display: flex;
-      gap: 6px;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-    }
-    .dot-red { background: #ef4444; }
-    .dot-yellow { background: #f59e0b; }
-    .dot-green { background: #10b981; }
-
-    .terminal-body {
-      padding: 28px 24px;
-      position: relative;
-    }
-
-    .code-line {
-      display: flex;
+    /* Inline Quick Command Badge */
+    .quick-cli-bar {
+      display: inline-flex;
       align-items: center;
       gap: 12px;
+      background: rgba(13, 20, 36, 0.75);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 12px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 14px;
-      line-height: 1.6;
+      font-size: 13px;
+      color: #38bdf8;
+      width: fit-content;
+      max-width: 100%;
     }
 
-    .code-prompt {
+    .quick-cli-bar .cli-prefix {
       color: var(--primary);
       user-select: none;
     }
 
-    .code-text {
-      color: #38bdf8;
-      word-break: break-all;
+    .quick-cli-bar .cli-copy {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: all 0.2s;
     }
 
-    .copy-btn {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
+    .quick-cli-bar .cli-copy:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Right Side Hero App Window Mockup (Where terminal card was) */
+    .hero-right {
+      position: relative;
+      perspective: 1000px;
+    }
+
+    .app-window-mockup {
+      background: #0d121f;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8), 0 0 35px rgba(77, 107, 254, 0.2);
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .app-window-mockup:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 35px 80px -15px rgba(0, 0, 0, 0.9), 0 0 50px rgba(77, 107, 254, 0.3);
+    }
+
+    .window-titlebar {
+      height: 36px;
+      background: #131b2e;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+
+    .window-title {
       font-size: 12px;
+      font-weight: 500;
+      color: #94a3b8;
       display: flex;
       align-items: center;
       gap: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
     }
 
-    .copy-btn:hover {
-      background: rgba(255, 255, 255, 0.14);
-      color: #ffffff;
-    }
-
-    /* Showcase Preview Section */
-    .showcase-wrap {
-      margin-bottom: 90px;
-      text-align: center;
-    }
-
-    .showcase-frame {
-      position: relative;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(77, 107, 254, 0.15);
-      overflow: hidden;
-      background: #0d1117;
-      display: inline-block;
-      max-width: 100%;
-    }
-
-    .showcase-frame img {
+    .app-img-container {
       width: 100%;
-      max-width: 1100px;
+      line-height: 0;
+      position: relative;
+      background: #0b0f19;
+    }
+
+    .app-img-container img {
+      width: 100%;
       height: auto;
       display: block;
     }
@@ -677,7 +658,7 @@
       color: var(--text-dim);
     }
 
-    @media (max-width: 960px) {
+    @media (max-width: 1024px) {
       header, main, footer { padding-left: 24px; padding-right: 24px; }
       .hero { grid-template-columns: 1fr; gap: 40px; }
       .hero-title { font-size: 40px; }
@@ -768,51 +749,45 @@
               <span>开发者文档</span>
             </a>
             <a href="#download" class="btn-secondary" data-i18n="btn_all_versions">
-              <span>全部版本与安装包</span>
+              <span>全部版本</span>
             </a>
+          </div>
+
+          <!-- Quick Terminal Command Pill -->
+          <div class="quick-cli-bar">
+            <span class="cli-prefix">$</span>
+            <span id="quick-cmd-text">npx @deepseek-ai/dsh web</span>
+            <button class="cli-copy" onclick="copyQuickCmd()" title="复制命令">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Right Terminal Card -->
+      <!-- Right Side: Big Desktop App Screenshot Window Mockup -->
       <div class="hero-right">
-        <div class="terminal-card">
-          <div class="terminal-header">
-            <div class="tab-group">
-              <button class="term-tab active" onclick="setTab(0)" data-i18n="tab_quick">一键使用</button>
-              <button class="term-tab" onclick="setTab(1)" data-i18n="tab_build">源码构建</button>
-            </div>
+        <div class="app-window-mockup">
+          <div class="window-titlebar">
             <div class="window-dots">
               <span class="dot dot-red"></span>
               <span class="dot dot-yellow"></span>
               <span class="dot dot-green"></span>
             </div>
-          </div>
-          <div class="terminal-body">
-            <button class="copy-btn" onclick="copyCode()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            <div class="window-title">
+              <svg width="13" height="13" viewBox="0 0 50 50" fill="currentColor" style="color: #4d6bfe;">
+                <path d="M48.8354 10.0479C48.3232 9.79199 48.1025 10.2798 47.8032 10.5278C47.7007 10.6079 47.6143 10.7119 47.5273 10.8076C46.7793 11.624 45.9048 12.1597 44.7622 12.0957C43.0923 12 41.666 12.5356 40.4058 13.8398C40.1377 12.2319 39.2476 11.272 37.8926 10.6558C37.1836 10.3359 36.4668 10.0156 35.9702 9.31982C35.6235 8.82373 35.5293 8.27197 35.356 7.72754C35.2456 7.3999 35.1353 7.06396 34.7651 7.00781C34.3633 6.94385 34.2056 7.2876 34.0479 7.57568C33.418 8.75195 33.1733 10.0479 33.1973 11.3599C33.2524 14.312 34.4736 16.6641 36.8999 18.3359C37.1758 18.5278 37.2466 18.7197 37.1597 19C36.9946 19.5757 36.7974 20.1357 36.624 20.7119C36.5137 21.0801 36.3486 21.1597 35.9624 21C34.6309 20.4321 33.481 19.5918 32.4644 18.5757C30.7393 16.8721 29.1792 14.9917 27.2334 13.52C26.7764 13.1758 26.3193 12.856 25.8467 12.5518C23.8618 10.584 26.1069 8.96777 26.627 8.77588C27.1704 8.57568 26.8159 7.8877 25.0591 7.896C23.3022 7.90381 21.6953 8.50391 19.647 9.30371C19.3477 9.42383 19.0322 9.51172 18.7095 9.58398C16.8501 9.22363 14.9199 9.14355 12.9033 9.37598C9.10596 9.80762 6.07275 11.6396 3.84326 14.7681C1.16455 18.5278 0.53418 22.7998 1.30664 27.2559C2.11768 31.9521 4.46582 35.8398 8.07373 38.8799C11.8159 42.0322 16.1255 43.5762 21.041 43.2803C24.0269 43.104 27.3516 42.6963 31.1016 39.4561C32.0469 39.936 33.0396 40.1279 34.686 40.272C35.9546 40.3921 37.1758 40.208 38.1211 40.0078C39.6021 39.688 39.4995 38.2881 38.9639 38.0322C34.623 35.9678 35.5762 36.8081 34.71 36.1279C36.9155 33.4639 40.2402 30.6958 41.54 21.728C41.6426 21.0161 41.5557 20.5679 41.54 19.9917C41.5322 19.6396 41.6108 19.5039 42.0049 19.4639C43.0923 19.3359 44.1479 19.0317 45.1167 18.4878C47.9292 16.9199 49.064 14.3438 49.3315 11.2559C49.3711 10.7837 49.3237 10.2959 48.8354 10.0479Z" />
               </svg>
-              <span id="copy-status" data-i18n="btn_copy">复制</span>
-            </button>
-            <div id="tab-content-0" class="code-line">
-              <span class="code-prompt">$</span>
-              <span class="code-text" id="code-str-0">npx @deepseek-ai/dsh web</span>
+              DeepSeek Harness Desktop
             </div>
-            <div id="tab-content-1" class="code-line" style="display: none;">
-              <span class="code-prompt">$</span>
-              <span class="code-text" id="code-str-1">git clone https://github.com/xtxo/dsh-ui.git &amp;&amp; npm install &amp;&amp; npm run build</span>
-            </div>
+            <div style="width: 44px;"></div>
+          </div>
+          <div class="app-img-container">
+            <img src="assets/preview.png" alt="DeepSeek Harness Desktop App Interface" />
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- App Screenshot Showcase -->
-    <div class="showcase-wrap">
-      <div class="showcase-frame">
-        <img src="assets/preview.png" alt="DeepSeek Harness Desktop App Interface" />
       </div>
     </div>
 
@@ -967,9 +942,6 @@
         btn_github: "查看 GitHub",
         btn_docs: "开发者文档",
         btn_all_versions: "全部版本",
-        tab_quick: "一键使用",
-        tab_build: "源码构建",
-        btn_copy: "复制",
         feat_sec_title: "为什么选择 DSH-UI 桌面客户端",
         feat_sec_desc: "基于现代 Rust + 原生 Web 容器的高性能轻量桌面解决方案",
         f1_title: "极致小巧 · 8.7MB",
@@ -1003,9 +975,6 @@
         btn_github: "View GitHub",
         btn_docs: "Developer Docs",
         btn_all_versions: "All Versions",
-        tab_quick: "Quick Start",
-        tab_build: "Build from Source",
-        btn_copy: "Copy",
         feat_sec_title: "Why Choose DSH-UI Desktop",
         feat_sec_desc: "Ultra-lightweight desktop solution built with Rust + native Webview container",
         f1_title: "Ultra-Lightweight · 8.7MB",
@@ -1054,24 +1023,10 @@
       });
     }
 
-    let activeTab = 0;
-    function setTab(index) {
-      activeTab = index;
-      document.querySelectorAll('.term-tab').forEach((tab, idx) => {
-        tab.classList.toggle('active', idx === index);
-      });
-      document.getElementById('tab-content-0').style.display = index === 0 ? 'flex' : 'none';
-      document.getElementById('tab-content-1').style.display = index === 1 ? 'flex' : 'none';
-    }
-
-    function copyCode() {
-      const text = document.getElementById('code-str-' + activeTab).innerText;
+    function copyQuickCmd() {
+      const text = document.getElementById('quick-cmd-text').innerText;
       navigator.clipboard.writeText(text).then(() => {
-        const copyStatus = document.getElementById('copy-status');
-        copyStatus.innerText = currentLang === 'zh' ? '已复制！' : 'Copied!';
-        setTimeout(() => {
-          copyStatus.innerText = i18n[currentLang]['btn_copy'];
-        }, 2000);
+        alert(currentLang === 'zh' ? '已复制命令：' + text : 'Copied: ' + text);
       });
     }
   </script>
