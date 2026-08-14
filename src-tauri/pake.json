@@ -1,0 +1,45 @@
+{
+  "windows": [
+    {
+      "url": "http://127.0.0.1:3080",
+      "url_type": "web",
+      "hide_title_bar": false,
+      "hide_window_decorations": false,
+      "fullscreen": false,
+      "width": 1280,
+      "height": 850,
+      "min_width": 900,
+      "min_height": 600,
+      "resizable": true,
+      "always_on_top": false,
+      "dark_mode": false,
+      "activation_shortcut": "Alt+D",
+      "disabled_web_shortcuts": false,
+      "hide_on_close": false,
+      "incognito": false,
+      "enable_wasm": true,
+      "enable_drag_drop": true,
+      "maximize": false,
+      "start_to_tray": false,
+      "force_internal_navigation": true,
+      "internal_url_regex": "",
+      "enable_find": true,
+      "new_window": true
+    }
+  ],
+  "user_agent": {
+    "macos": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+    "linux": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "windows": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 DeepSeekHarnessDesktop/1.0"
+  },
+  "system_tray": {
+    "macos": false,
+    "linux": true,
+    "windows": true
+  },
+  "system_tray_path": "png/deepseek_harness_512.png",
+  "inject": [],
+  "proxy_url": "",
+  "multi_instance": false,
+  "multi_window": false
+}

@@ -1,0 +1,14 @@
+{
+  "bundle": {
+    "icon": ["png/deepseek_harness_256.ico", "png/deepseek_harness_32.ico"],
+    "active": true,
+    "resources": ["png/deepseek_harness_32.ico"],
+    "targets": ["nsis", "msi"],
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "wix": {
+        "language": ["en-US", "zh-CN"]
+      }
+    }
+  }
+}

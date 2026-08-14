@@ -1,0 +1,20 @@
+{
+  "productName": "DeepSeek Harness",
+  "identifier": "com.deepseek.harness",
+  "version": "0.1.0",
+  "app": {
+    "withGlobalTauri": true,
+    "trayIcon": {
+      "iconPath": "png/deepseek_harness_512.png",
+      "iconAsTemplate": false,
+      "id": "pake-tray"
+    },
+    "security": {
+      "headers": {},
+      "csp": null
+    }
+  },
+  "build": {
+    "frontendDist": "../dist"
+  }
+}

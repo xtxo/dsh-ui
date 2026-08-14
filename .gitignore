@@ -1,0 +1,10 @@
+node_modules/
+src-tauri/target/
+release/
+.pake/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.local
+*.log

@@ -1,0 +1,30 @@
+{
+  "name": "dsh-ui",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness Lightweight Desktop Client (macOS & Windows & Linux)",
+  "author": "xtxo",
+  "license": "MIT",
+  "homepage": "https://github.com/xtxo/dsh-ui",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xtxo/dsh-ui.git"
+  },
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:debug": "tauri build --debug",
+    "build:mac": "tauri build --target universal-apple-darwin",
+    "build:mac-arm64": "tauri build --target aarch64-apple-darwin",
+    "build:mac-x64": "tauri build --target x86_64-apple-darwin",
+    "build:windows": "tauri build --target x86_64-pc-windows-msvc",
+    "build:linux": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "~2.10.1",
+    "@tauri-apps/cli": "^2.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  }
+}

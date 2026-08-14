@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepSeek Harness Desktop - 一切皆插件 · 极致轻量桌面客户端</title>
+  <meta name="description" content="基于 Pake / Tauri 构建的 DeepSeek Harness 官方风格轻量桌面客户端，体积仅 8.7MB，支持 Windows / macOS / Linux。">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <style>
+    :root {
+      --bg: #070c18;
+      --bg-card: rgba(15, 23, 42, 0.65);
+      --bg-card-hover: rgba(30, 41, 59, 0.8);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(77, 107, 254, 0.4);
+      --primary: #4d6bfe;
+      --primary-hover: #3b57e8;
+      --primary-glow: rgba(77, 107, 254, 0.25);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --code-bg: #0c1322;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* DeepSeek Fluid Ambient Background */
+    .ambient-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .ambient-glow-1 {
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(29, 97, 254, 0.22) 0%, rgba(29, 97, 254, 0) 70%);
+      top: -150px;
+      right: -100px;
+      filter: blur(60px);
+    }
+
+    .ambient-glow-2 {
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(14, 165, 233, 0) 70%);
+      bottom: -200px;
+      left: -150px;
+      filter: blur(80px);
+    }
+
+    .ambient-wave {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 75% 30%, rgba(30, 64, 175, 0.18) 0%, transparent 60%),
+                  radial-gradient(circle at 20% 80%, rgba(15, 23, 42, 0.9) 0%, transparent 80%);
+      opacity: 0.9;
+    }
+
+    /* Header */
+    header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 60px;
+      max-width: 1360px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-whale {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #1d61fe, #4d6bfe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(77, 107, 254, 0.35);
+    }
+
+    .logo-whale svg {
+      width: 24px;
+      height: 24px;
+      fill: #ffffff;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.03em;
+    }
+
+    .badge-harness {
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      padding: 3px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .lang-switcher {
+      display: flex;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn.active {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+    }
+
+    .github-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: #ffffff;
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .github-link:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Main Container */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 40px 60px 80px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Hero Section */
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 48px;
+      align-items: center;
+      padding-top: 30px;
+      margin-bottom: 90px;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .hero-title {
+      font-size: 54px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      max-width: 580px;
+    }
+
+    .hero-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #ffffff;
+      color: #0b1120;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 13px 26px;
+      border-radius: 30px;
+      text-decoration: none;
+      box-shadow: 0 10px 25px rgba(255, 255, 255, 0.15);
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(255, 255, 255, 0.25);
+      background: #f1f5f9;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 13px 22px;
+      border-radius: 30px;
+      text-decoration: none;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Terminal Mockup Card */
+    .terminal-card {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .term-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .term-tab.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .terminal-body {
+      padding: 28px 24px;
+      position: relative;
+    }
+
+    .code-line {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .code-prompt {
+      color: var(--primary);
+      user-select: none;
+    }
+
+    .code-text {
+      color: #38bdf8;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    /* Section Heading */
+    .section-title-wrap {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .section-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+    }
+
+    /* Feature Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 90px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      backdrop-filter: blur(16px);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .feature-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-focus);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: rgba(77, 107, 254, 0.12);
+      border: 1px solid rgba(77, 107, 254, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      color: var(--primary);
+    }
+
+    .feature-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    /* Downloads Cards */
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 90px;
+    }
+
+    .download-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .download-card.highlight {
+      border-color: rgba(77, 107, 254, 0.4);
+      background: linear-gradient(180deg, rgba(77, 107, 254, 0.12) 0%, rgba(15, 23, 42, 0.75) 100%);
+    }
+
+    .download-card.highlight::before {
+      content: 'RECOMMENDED';
+      position: absolute;
+      top: 14px;
+      right: -30px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 3px 30px;
+      transform: rotate(45deg);
+      letter-spacing: 0.05em;
+    }
+
+    .os-icon {
+      width: 56px;
+      height: 56px;
+      margin-bottom: 20px;
+    }
+
+    .download-os-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .download-os-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .dl-btn {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: #ffffff;
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      margin-bottom: 8px;
+    }
+
+    .download-card.highlight .dl-btn {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .download-card.highlight .dl-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .dl-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .sub-link {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-decoration: none;
+      margin-top: 4px;
+    }
+
+    .sub-link:hover {
+      color: var(--primary);
+    }
+
+    /* Comparison Table Section */
+    .comparison-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      margin-bottom: 90px;
+      backdrop-filter: blur(16px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    th {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    .badge-win {
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    .badge-loss {
+      color: #94a3b8;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 60px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      background: rgba(7, 12, 24, 0.8);
+    }
+
+    .footer-credits {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    .footer-credits a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .footer-credits a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 960px) {
+      header, main, footer { padding-left: 24px; padding-right: 24px; }
+      .hero { grid-template-columns: 1fr; gap: 40px; }
+      .hero-title { font-size: 40px; }
+      .features-grid, .download-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-canvas">
+    <div class="ambient-wave"></div>
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+  </div>
+
+  <!-- Navigation -->
+  <header>
+    <a href="#" class="logo-group">
+      <div class="logo-whale">
+        <svg viewBox="0 0 50 50">
+          <path d="M48.8354 10.0479C48.3232 9.79199 48.1025 10.2798 47.8032 10.5278C47.7007 10.6079 47.6143 10.7119 47.5273 10.8076C46.7793 11.624 45.9048 12.1597 44.7622 12.0957C43.0923 12 41.666 12.5356 40.4058 13.8398C40.1377 12.2319 39.2476 11.272 37.8926 10.6558C37.1836 10.3359 36.4668 10.0156 35.9702 9.31982C35.6235 8.82373 35.5293 8.27197 35.356 7.72754C35.2456 7.3999 35.1353 7.06396 34.7651 7.00781C34.3633 6.94385 34.2056 7.2876 34.0479 7.57568C33.418 8.75195 33.1733 10.0479 33.1973 11.3599C33.2524 14.312 34.4736 16.6641 36.8999 18.3359C37.1758 18.5278 37.2466 18.7197 37.1597 19C36.9946 19.5757 36.7974 20.1357 36.624 20.7119C36.5137 21.0801 36.3486 21.1597 35.9624 21C34.6309 20.4321 33.481 19.5918 32.4644 18.5757C30.7393 16.8721 29.1792 14.9917 27.2334 13.52C26.7764 13.1758 26.3193 12.856 25.8467 12.5518C23.8618 10.584 26.1069 8.96777 26.627 8.77588C27.1704 8.57568 26.8159 7.8877 25.0591 7.896C23.3022 7.90381 21.6953 8.50391 19.647 9.30371C19.3477 9.42383 19.0322 9.51172 18.7095 9.58398C16.8501 9.22363 14.9199 9.14355 12.9033 9.37598C9.10596 9.80762 6.07275 11.6396 3.84326 14.7681C1.16455 18.5278 0.53418 22.7998 1.30664 27.2559C2.11768 31.9521 4.46582 35.8398 8.07373 38.8799C11.8159 42.0322 16.1255 43.5762 21.041 43.2803C24.0269 43.104 27.3516 42.6963 31.1016 39.4561C32.0469 39.936 33.0396 40.1279 34.686 40.272C35.9546 40.3921 37.1758 40.208 38.1211 40.0078C39.6021 39.688 39.4995 38.2881 38.9639 38.0322C34.623 35.9678 35.5762 36.8081 34.71 36.1279C36.9155 33.4639 40.2402 30.6958 41.54 21.728C41.6426 21.0161 41.5557 20.5679 41.54 19.9917C41.5322 19.6396 41.6108 19.5039 42.0049 19.4639C43.0923 19.3359 44.1479 19.0317 45.1167 18.4878C47.9292 16.9199 49.064 14.3438 49.3315 11.2559C49.3711 10.7837 49.3237 10.2959 48.8354 10.0479ZM24.3262 37.8398C20.1196 34.4639 18.0791 33.3521 17.2358 33.3999C16.4482 33.4482 16.5898 34.3682 16.7632 34.9678C16.9443 35.5601 17.1812 35.9683 17.5117 36.4878C17.7402 36.832 17.8979 37.3442 17.2832 37.728C15.9282 38.584 13.5728 37.4399 13.4624 37.3838C10.7207 35.7358 8.42822 33.5601 6.81348 30.584C5.25342 27.7197 4.34766 24.6479 4.19775 21.3677C4.1582 20.5757 4.38672 20.2959 5.15869 20.1519C6.17529 19.96 7.22314 19.9199 8.23926 20.0718C12.5327 20.7119 16.1885 22.6719 19.2529 25.7759C21.002 27.5439 22.3252 29.6558 23.6885 31.7202C25.1377 33.9121 26.6978 36 28.6831 37.7119C29.3843 38.312 29.9434 38.7681 30.479 39.104C28.8643 39.2881 26.1699 39.3281 24.3262 37.8398ZM26.3433 24.6001C26.3433 24.248 26.6191 23.9678 26.9658 23.9678C27.0444 23.9678 27.1152 23.9839 27.1782 24.0078C27.2651 24.04 27.3438 24.0879 27.4067 24.1602C27.5171 24.272 27.5801 24.4321 27.5801 24.6001C27.5801 24.9521 27.3042 25.2319 26.9575 25.2319C26.6108 25.2319 26.3433 24.9521 26.3433 24.6001ZM32.6064 27.8799C32.2046 28.0479 31.8027 28.1919 31.4165 28.208C30.8179 28.2397 30.1641 27.9922 29.8096 27.688C29.2583 27.2158 28.8643 26.9521 28.6987 26.1279C28.6279 25.7759 28.6675 25.2319 28.7305 24.9199C28.8721 24.248 28.7144 23.8159 28.2495 23.4238C27.8716 23.104 27.3911 23.0161 26.8633 23.0161C26.666 23.0161 26.4849 22.9277 26.3511 22.856C26.1304 22.7441 25.9492 22.4639 26.1226 22.1201C26.1777 22.0078 26.4458 21.7358 26.5088 21.688C27.2256 21.272 28.0527 21.4077 28.8169 21.7197C29.5259 22.0161 30.0615 22.5601 30.834 23.3281C31.6216 24.2559 31.7632 24.5117 32.2124 25.208C32.5669 25.752 32.8901 26.312 33.1104 26.9521C33.2446 27.3521 33.0713 27.6802 32.6064 27.8799Z" />
+        </svg>
+      </div>
+      <span class="brand-title">deepseek</span>
+      <span class="badge-harness">Harness UI</span>
+    </a>
+
+    <div class="nav-actions">
+      <div class="lang-switcher">
+        <button class="lang-btn active" id="btn-zh" onclick="setLang('zh')">中文</button>
+        <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+      </div>
+      <a href="https://github.com/xtxo/dsh-ui" target="_blank" class="github-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        <span>GitHub</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main>
+    <div class="hero">
+      <div class="hero-left">
+        <div class="hero-tag" data-i18n="hero_tag">
+          DeepSeek Harness 桌面客户端 · 开发者预览版
+        </div>
+        <h1 class="hero-title" data-i18n="hero_title">
+          一切皆插件 · 极致轻量
+        </h1>
+        <p class="hero-desc" data-i18n="hero_desc">
+          基于 Pake / Tauri 深度打造，摆脱 Electron 臃肿包袱。体积仅 8.7MB，秒级极速唤醒，后台全自动静默拉起智能体引擎，支持 Windows 与 macOS。
+        </p>
+        <div class="hero-cta">
+          <a href="#download" class="btn-primary" data-i18n="btn_download">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>下载桌面客户端</span>
+          </a>
+          <a href="https://github.com/xtxo/dsh-ui" target="_blank" class="btn-secondary" data-i18n="btn_github">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            <span>查看 GitHub 源码</span>
+          </a>
+          <a href="https://github.com/deepseek-ai/deepseek-harness" target="_blank" class="btn-secondary" data-i18n="btn_docs">
+            <span>官方架构文档</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Terminal Card -->
+      <div class="hero-right">
+        <div class="terminal-card">
+          <div class="terminal-header">
+            <div class="tab-group">
+              <button class="term-tab active" onclick="setTab(0)" data-i18n="tab_quick">一键使用</button>
+              <button class="term-tab" onclick="setTab(1)" data-i18n="tab_build">源码构建</button>
+            </div>
+            <div class="window-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+          </div>
+          <div class="terminal-body">
+            <button class="copy-btn" onclick="copyCode()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span id="copy-status" data-i18n="btn_copy">复制</span>
+            </button>
+            <div id="tab-content-0" class="code-line">
+              <span class="code-prompt">$</span>
+              <span class="code-text" id="code-str-0">npx @deepseek-ai/dsh web</span>
+            </div>
+            <div id="tab-content-1" class="code-line" style="display: none;">
+              <span class="code-prompt">$</span>
+              <span class="code-text" id="code-str-1">git clone https://github.com/xtxo/dsh-ui.git &amp;&amp; npm install &amp;&amp; npm run build</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature Section -->
+    <div class="section-title-wrap">
+      <h2 class="section-title" data-i18n="feat_sec_title">为什么选择 DSH-UI 桌面版</h2>
+      <p class="section-subtitle" data-i18n="feat_sec_desc">基于现代化 Rust + 原生 Web 容器打造的高性能客户端</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          </svg>
+        </div>
+        <h3 class="feature-title" data-i18n="f1_title">极致小巧 · 8.7MB</h3>
+        <p class="feature-desc" data-i18n="f1_desc">相较于传统 Electron 动辄 150MB+ 的臃肿体积，基于 Pake 架构的二进制仅 8.7MB，内存开销减少 80% 以上。</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <h3 class="feature-title" data-i18n="f2_title">智能后台管理 · 双击即用</h3>
+        <p class="feature-desc" data-i18n="f2_desc">内置 Rust 原生生命周期管理引擎，无需手动敲命令行。双击自动静默拉起后端并智能握手，退出自动释放。</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </div>
+        <h3 class="feature-title" data-i18n="f3_title">全平台原生支持</h3>
+        <p class="feature-desc" data-i18n="f3_desc">支持 Windows 10/11、macOS (Apple Silicon & Intel) 以及主流 Linux 发行版，提供原生应用与托盘交互体验。</p>
+      </div>
+    </div>
+
+    <!-- Download Section -->
+    <div id="download" class="section-title-wrap">
+      <h2 class="section-title" data-i18n="dl_sec_title">立即下载客户端</h2>
+      <p class="section-subtitle" data-i18n="dl_sec_desc">选择适用于你操作系统的安装包或可执行文件</p>
+    </div>
+
+    <div class="download-grid">
+      <!-- Windows -->
+      <div class="download-card highlight">
+        <div class="os-icon">
+          <svg viewBox="0 0 88 88" width="56" height="56" fill="#00adef">
+            <path d="M0 12.402l35.687-4.86.016 34.423-35.67.243L0 12.402zm35.67 33.528l.028 34.453L.028 75.48.001 46.162l35.697-.232zm4.313-39.023L87.954 0v41.527l-47.971.375V6.907zm47.971 38.895v42.198l-47.971-6.755V46.064l47.971-.262z"/>
+          </svg>
+        </div>
+        <div class="download-os-name">Windows</div>
+        <div class="download-os-desc">Windows 10 / 11 (64-bit)</div>
+        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="dl-btn" data-i18n="btn_dl_win">
+          下载 Windows (.exe)
+        </a>
+        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="sub-link" data-i18n="btn_dl_win_msi">下载 .msi 安装包</a>
+      </div>
+
+      <!-- macOS -->
+      <div class="download-card">
+        <div class="os-icon">
+          <svg viewBox="0 0 170 170" width="56" height="56" fill="#ffffff">
+            <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-5.35.24-10.26-1.9-14.75-6.42-3.26-3.26-7.14-8.08-11.64-14.46-6.19-8.72-11.13-19.12-14.81-31.21-3.69-12.09-5.54-23.76-5.54-35.02 0-14.45 3.49-26.69 10.47-36.72 6.98-10.04 15.82-15.18 26.52-15.44 5.35 0 11.05 1.41 17.11 4.23 6.06 2.82 10.04 4.34 11.96 4.58 1.57-.24 5.76-1.83 12.56-4.76 6.8-2.93 12.69-4.24 17.68-3.94 13.06.77 23.36 5.56 30.9 14.36-11.45 6.92-17.06 16.51-16.84 28.78.23 9.77 4.01 17.9 11.34 24.41 7.33 6.51 15.93 10.15 25.8 10.92-2.14 6.74-4.79 13.3-7.94 19.67zM119.22 31.84c0-7.29 2.62-14.07 7.86-20.35 5.24-6.28 11.69-10.11 19.35-11.49.23 1.13.34 2.27.34 3.42 0 7.42-2.73 14.37-8.19 20.85-5.46 6.48-12.07 10.28-19.83 11.4-.23-1.25-.34-2.43-.34-3.53z"/>
+          </svg>
+        </div>
+        <div class="download-os-name">macOS</div>
+        <div class="download-os-desc">Apple Silicon (M1~M4) / Intel</div>
+        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="dl-btn" data-i18n="btn_dl_mac">
+          下载 Apple Silicon (.dmg)
+        </a>
+        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="sub-link" data-i18n="btn_dl_mac_intel">下载 Intel 架构 (.dmg)</a>
+      </div>
+
+      <!-- Linux -->
+      <div class="download-card">
+        <div class="os-icon">
+          <svg viewBox="0 0 512 512" width="56" height="56" fill="#fcd34d">
+            <path d="M400.1 270.6c-4.7-22.9-16.1-43.2-32.8-58.7-2.6-2.4-5.3-4.6-8.2-6.6 6.3-17.7 7.7-36.9 3.8-55.7-8.6-41.4-40.4-74-81.8-83.9-30.8-7.4-62.7-1.3-88.7 16.9-26 18.2-42.5 46.8-45.8 79.5-1.5 15 .2 30.1 5 44.4-19.1 16.7-31.8 39.8-35.8 65.5-5.5 35 4.6 70.3 27.6 96.6 23 26.3 56.4 41.5 91.4 41.5h103.4c29.5 0 57.6-11.7 78.4-32.5 20.9-20.8 32.5-49 32.5-78.5 0-10-1.7-19.9-5-28.5z"/>
+          </svg>
+        </div>
+        <div class="download-os-name">Linux</div>
+        <div class="download-os-desc">Ubuntu / Debian / Arch / Fedora</div>
+        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="dl-btn" data-i18n="btn_dl_linux">
+          下载 Linux (.AppImage / .deb)
+        </a>
+        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="sub-link" data-i18n="btn_dl_linux_deb">查看 Linux 软件包</a>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="comparison-card">
+      <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px;" data-i18n="comp_title">技术架构对比：Pake (DSH-UI) vs Electron</h3>
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="th_feature">对比特性</th>
+            <th>DSH-UI (基于 Pake / Tauri)</th>
+            <th>传统 Electron 方案</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-i18n="td_size">安装包体积</td>
+            <td class="badge-win">~8.7 MB (极致轻巧)</td>
+            <td class="badge-loss">120 MB ~ 250 MB+</td>
+          </tr>
+          <tr>
+            <td data-i18n="td_mem">运行内存占用</td>
+            <td class="badge-win">~35 MB ~ 60 MB</td>
+            <td class="badge-loss">250 MB ~ 600 MB</td>
+          </tr>
+          <tr>
+            <td data-i18n="td_speed">启动响应速度</td>
+            <td class="badge-win">&lt; 0.5 秒 (秒级即启)</td>
+            <td class="badge-loss">2 ~ 4 秒</td>
+          </tr>
+          <tr>
+            <td data-i18n="td_backend">智能体服务集成</td>
+            <td class="badge-win">Rust 原生自动探针与生命周期静默管控</td>
+            <td class="badge-loss">需外部手动启服务或额外笨重打包</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-credits" data-i18n="footer_text">
+      基于 <a href="https://github.com/tw93/Pake" target="_blank">tw93/Pake</a> 与 <a href="https://github.com/deepseek-ai/deepseek-harness" target="_blank">deepseek-ai/deepseek-harness</a> 开源生态构建。
+    </div>
+    <div class="footer-copy">
+      Released under the MIT License. Copyright &copy; 2026 xtxo.
+    </div>
+  </footer>
+
+  <script>
+    const i18n = {
+      zh: {
+        hero_tag: "DeepSeek Harness 桌面客户端 · 开发者预览版",
+        hero_title: "一切皆插件 · 极致轻量",
+        hero_desc: "基于 Pake / Tauri 深度打造，摆脱 Electron 臃肿包袱。体积仅 8.7MB，秒级极速唤醒，后台全自动静默拉起智能体引擎，支持 Windows 与 macOS。",
+        btn_download: "下载桌面客户端",
+        btn_github: "查看 GitHub 源码",
+        btn_docs: "官方架构文档",
+        tab_quick: "一键使用",
+        tab_build: "源码构建",
+        btn_copy: "复制",
+        feat_sec_title: "为什么选择 DSH-UI 桌面版",
+        feat_sec_desc: "基于现代化 Rust + 原生 Web 容器打造的高性能客户端",
+        f1_title: "极致小巧 · 8.7MB",
+        f1_desc: "相较于传统 Electron 动辄 150MB+ 的臃肿体积，基于 Pake 架构的二进制仅 8.7MB，内存开销减少 80% 以上。",
+        f2_title: "智能后台管理 · 双击即用",
+        f2_desc: "内置 Rust 原生生命周期管理引擎，无需手动敲命令行。双击自动静默拉起后端并智能握手，退出自动释放。",
+        f3_title: "全平台原生支持",
+        f3_desc: "支持 Windows 10/11、macOS (Apple Silicon & Intel) 以及主流 Linux 发行版，提供原生应用与托盘交互体验。",
+        dl_sec_title: "立即下载客户端",
+        dl_sec_desc: "选择适用于你操作系统的安装包或可执行文件",
+        btn_dl_win: "下载 Windows (.exe)",
+        btn_dl_win_msi: "下载 .msi 安装包",
+        btn_dl_mac: "下载 Apple Silicon (.dmg)",
+        btn_dl_mac_intel: "下载 Intel 架构 (.dmg)",
+        btn_dl_linux: "下载 Linux (.AppImage / .deb)",
+        btn_dl_linux_deb: "查看 Linux 软件包",
+        comp_title: "技术架构对比：Pake (DSH-UI) vs Electron",
+        th_feature: "对比特性",
+        td_size: "安装包体积",
+        td_mem: "运行内存占用",
+        td_speed: "启动响应速度",
+        td_backend: "智能体服务集成",
+        footer_text: "基于 <a href='https://github.com/tw93/Pake' target='_blank'>tw93/Pake</a> 与 <a href='https://github.com/deepseek-ai/deepseek-harness' target='_blank'>deepseek-ai/deepseek-harness</a> 开源生态构建。"
+      },
+      en: {
+        hero_tag: "DeepSeek Harness Desktop Client · Developer Preview",
+        hero_title: "Everything is a Plugin · Pure & Lightweight",
+        hero_desc: "Built with Pake & Tauri, free of Electron bloat. Only ~8.7MB binary size, sub-second cold starts, automatic background agent engine management, native for Windows, macOS & Linux.",
+        btn_download: "Download Desktop App",
+        btn_github: "View GitHub Repo",
+        btn_docs: "Architecture Docs",
+        tab_quick: "Quick Start",
+        tab_build: "Build from Source",
+        btn_copy: "Copy",
+        feat_sec_title: "Why Choose DSH-UI Desktop",
+        feat_sec_desc: "High performance agent client built with modern Rust + native webview",
+        f1_title: "Ultra-Lightweight · 8.7MB",
+        f1_desc: "Unlike bulky Electron apps that exceed 150MB+, the Pake-based executable is only 8.7MB with over 80% less memory usage.",
+        f2_title: "Auto Service Lifecycle",
+        f2_desc: "Embedded Rust process manager. Double-click to auto-launch background agent engine silently without touching CLI. Clean shutdown on exit.",
+        f3_title: "Multi-Platform Native",
+        f3_desc: "First-class support for Windows 10/11, macOS (Apple Silicon & Intel), and Linux with system tray and drag-drop support.",
+        dl_sec_title: "Download DSH-UI Desktop",
+        dl_sec_desc: "Select the installer or binary matching your operating system",
+        btn_dl_win: "Download Windows (.exe)",
+        btn_dl_win_msi: "Download .msi Installer",
+        btn_dl_mac: "Download Apple Silicon (.dmg)",
+        btn_dl_mac_intel: "Download Intel Mac (.dmg)",
+        btn_dl_linux: "Download Linux (.AppImage / .deb)",
+        btn_dl_linux_deb: "View Linux Packages",
+        comp_title: "Architecture Comparison: Pake (DSH-UI) vs Electron",
+        th_feature: "Metrics",
+        td_size: "App Binary Size",
+        td_mem: "RAM Consumption",
+        td_speed: "Startup Time",
+        td_backend: "Agent Backend Management",
+        footer_text: "Built on top of <a href='https://github.com/tw93/Pake' target='_blank'>tw93/Pake</a> & <a href='https://github.com/deepseek-ai/deepseek-harness' target='_blank'>deepseek-ai/deepseek-harness</a> open-source projects."
+      }
+    };
+
+    let currentLang = 'zh';
+
+    function setLang(lang) {
+      currentLang = lang;
+      document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
+      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[lang][key]) {
+          if (el.tagName === 'A' || el.tagName === 'SPAN' || el.tagName === 'BUTTON' || el.tagName === 'DIV' || el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'H3' || el.tagName === 'P' || el.tagName === 'TH' || el.tagName === 'TD') {
+            if (key === 'btn_download' || key === 'btn_github') {
+              el.querySelector('span').innerText = i18n[lang][key];
+            } else if (key === 'footer_text') {
+              el.innerHTML = i18n[lang][key];
+            } else {
+              el.innerText = i18n[lang][key];
+            }
+          }
+        }
+      });
+    }
+
+    let activeTab = 0;
+    function setTab(index) {
+      activeTab = index;
+      document.querySelectorAll('.term-tab').forEach((tab, idx) => {
+        tab.classList.toggle('active', idx === index);
+      });
+      document.getElementById('tab-content-0').style.display = index === 0 ? 'flex' : 'none';
+      document.getElementById('tab-content-1').style.display = index === 1 ? 'flex' : 'none';
+    }
+
+    function copyCode() {
+      const text = document.getElementById('code-str-' + activeTab).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const copyStatus = document.getElementById('copy-status');
+        copyStatus.innerText = currentLang === 'zh' ? '已复制！' : 'Copied!';
+        setTimeout(() => {
+          copyStatus.innerText = i18n[currentLang]['btn_copy'];
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
