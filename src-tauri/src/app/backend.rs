@@ -118,7 +118,7 @@ pub fn get_injected_updater_script() -> &'static str {
 
             const widget = document.createElement('div');
             widget.id = 'dsh-version-widget';
-            widget.innerHTML = '<span>🐋</span> <span style="font-weight:600; color:#cbd5e1;">DSH-UI v0.1.4</span> <span style="opacity:0.4;">|</span> <span style="color:#60a5fa;">检查更新</span>';
+            widget.innerHTML = '<span>🐋</span> <span style="font-weight:700; color:#60a5fa; background:rgba(77,107,254,0.22); padding:1px 7px; border-radius:10px; border:1px solid rgba(77,107,254,0.45); font-size:10px; letter-spacing:0.02em;">v0.1.4</span> <span style="font-weight:600; color:#e2e8f0;">DSH-UI</span> <span style="opacity:0.4;">·</span> <span style="color:#38bdf8;">检查更新</span>';
             
             widget.onclick = function(e) {
                 e.stopPropagation();

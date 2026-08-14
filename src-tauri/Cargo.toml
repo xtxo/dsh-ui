@@ -1,6 +1,6 @@
 [package]
 name = "deepseek-harness"
-version = "0.1.0"
+version = "0.1.4"
 description = "DeepSeek Harness Desktop Application"
 authors = ["DeepSeek", "Tw93"]
 license = "GPL-3.0-or-later"
