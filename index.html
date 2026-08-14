@@ -689,12 +689,12 @@
               <span data-i18n="btn_dl_mac_hero">Download for Mac</span>
             </a>
 
-            <!-- Windows Download Button -->
-            <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64-setup.exe" class="btn-download-white" id="btn-hero-win">
+            <!-- Windows Download Button (Portable Direct Run) -->
+            <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek-Harness-Portable.exe" class="btn-download-white" id="btn-hero-win">
               <svg width="18" height="18" viewBox="0 0 88 88" fill="currentColor">
                 <path d="M0 12.402l35.687-4.86.016 34.423-35.67.243L0 12.402zm35.67 33.528l.028 34.453L.028 75.48.001 46.162l35.697-.232zm4.313-39.023L87.954 0v41.527l-47.971.375V6.907zm47.971 38.895v42.198l-47.971-6.755V46.064l47.971-.262z"/>
               </svg>
-              <span data-i18n="btn_dl_win_hero">Download for Windows</span>
+              <span data-i18n="btn_dl_win_hero">Download for Windows (Portable)</span>
             </a>
           </div>
 
@@ -816,10 +816,14 @@
         </div>
         <div class="download-os-name">Windows</div>
         <div class="download-os-desc">Windows 10 / 11 (64-bit)</div>
-        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64-setup.exe" class="dl-btn" data-i18n="btn_dl_win">
-          下载 Windows (.exe 安装包)
+        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek-Harness-Portable.exe" class="dl-btn" data-i18n="btn_dl_win">
+          下载免安装绿色版 (.exe 直接运行)
         </a>
-        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64_zh-CN.msi" class="sub-link" data-i18n="btn_dl_win_msi">下载 .msi 安装包</a>
+        <div style="display: flex; gap: 12px; margin-top: 6px;">
+          <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64-setup.exe" class="sub-link" data-i18n="btn_dl_win_setup">下载 Setup 安装版</a>
+          <span style="color: var(--text-dim);">·</span>
+          <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64_zh-CN.msi" class="sub-link" data-i18n="btn_dl_win_msi">下载 .msi 安装包</a>
+        </div>
       </div>
 
       <!-- Linux -->
