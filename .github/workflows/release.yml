@@ -79,3 +79,18 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+
+      - name: Upload Portable Windows Executable
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          $exePath = "src-tauri/target/x86_64-pc-windows-msvc/release/deepseek-harness.exe"
+          if (-not (Test-Path $exePath)) {
+            $exePath = "src-tauri/target/release/deepseek-harness.exe"
+          }
+          if (Test-Path $exePath) {
+            Copy-Item $exePath "DeepSeek-Harness-Portable.exe" -Force
+            gh release upload ${{ github.ref_name }} "DeepSeek-Harness-Portable.exe" --clobber
+          }
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
