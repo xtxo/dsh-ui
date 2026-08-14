@@ -223,6 +223,26 @@
       font-weight: 500;
     }
 
+    .hero-highlight-pill {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(77, 107, 254, 0.2);
+      border: 1px solid rgba(77, 107, 254, 0.55);
+      color: #60a5fa;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 12px;
+      box-shadow: 0 0 14px rgba(77, 107, 254, 0.35);
+      letter-spacing: 0.02em;
+    }
+
+    .hero-highlight-text {
+      color: #38bdf8;
+      font-weight: 700;
+      text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+
     .hero-title {
       font-size: 54px;
       font-weight: 800;
@@ -668,13 +688,13 @@
     <div class="hero">
       <div class="hero-left">
         <div class="hero-tag" data-i18n="hero_tag">
-          DeepSeek Harness 开发者预览版
+          DeepSeek Harness 开发者预览版 <span class="hero-highlight-pill">仅 8.7MB · 双击秒开</span>
         </div>
         <h1 class="hero-title" data-i18n="hero_title">
           一切皆插件
         </h1>
         <p class="hero-desc" data-i18n="hero_desc">
-          DeepSeek Harness 开发者预览版面向全球 Harness 开发者开放测试，并同步开放源代码。<br>
+          DeepSeek Harness 开发者预览版（<span class="hero-highlight-text">仅 8.7MB</span>）面向全球 Harness 开发者开放测试，并同步开放源代码。<br>
           模型、工具、技能、会话、沙箱、存储、循环、调度、UI 等所有 Agent 能力均由插件组合而成，可以自由替换和灵活重组。
         </p>
 
@@ -892,11 +912,11 @@
   <script>
     const i18n = {
       zh: {
-        hero_tag: "DeepSeek Harness 开发者预览版",
+        hero_tag: 'DeepSeek Harness 开发者预览版 <span class="hero-highlight-pill">仅 8.7MB · 双击秒开</span>',
         hero_title: "一切皆插件",
-        hero_desc: "DeepSeek Harness 开发者预览版面向全球 Harness 开发者开放测试，并同步开放源代码。<br>模型、工具、技能、会话、沙箱、存储、循环、调度、UI 等所有 Agent 能力均由插件组合而成，可以自由替换和灵活重组。",
+        hero_desc: "DeepSeek Harness 开发者预览版（<span class='hero-highlight-text'>仅 8.7MB</span>）面向全球 Harness 开发者开放测试，并同步开放源代码。<br>模型、工具、技能、会话、沙箱、存储、循环、调度、UI 等所有 Agent 能力均由插件组合而成，可以自由替换和灵活重组。",
         btn_dl_mac_hero: "Download for Mac",
-        btn_dl_win_hero: "Download for Windows",
+        btn_dl_win_hero: "Download for Windows (Portable)",
         btn_github: "查看 GitHub",
         btn_docs: "开发者文档",
         btn_all_versions: "全部版本",
@@ -912,7 +932,8 @@
         dl_sec_desc: "选择适用于你操作系统的安装包或可执行文件 (v0.1.2)",
         btn_dl_mac: "下载 Apple Silicon (.dmg)",
         btn_dl_mac_intel: "下载 Intel 架构 (.dmg)",
-        btn_dl_win: "下载 Windows (.exe 安装包)",
+        btn_dl_win: "下载免安装绿色版 (.exe 直接运行)",
+        btn_dl_win_setup: "下载 Setup 安装版",
         btn_dl_win_msi: "下载 .msi 安装包",
         btn_dl_linux: "查看 GitHub Releases",
         btn_dl_linux_deb: "源码自主构建",
@@ -925,11 +946,11 @@
         footer_text: "基于 <a href='https://github.com/tw93/Pake' target='_blank'>tw93/Pake</a> 与 <a href='https://github.com/deepseek-ai/deepseek-harness' target='_blank'>deepseek-ai/deepseek-harness</a> 开源生态构建。"
       },
       en: {
-        hero_tag: "DeepSeek Harness Developer Preview",
+        hero_tag: 'DeepSeek Harness Developer Preview <span class="hero-highlight-pill">Only 8.7MB · Instant Launch</span>',
         hero_title: "Everything is a Plugin",
-        hero_desc: "DeepSeek Harness Developer Preview is open for worldwide Harness developers and open-sourced simultaneously.<br>Models, tools, skills, conversations, sandbox, memory, loops, orchestration, and UI are fully composable plugins.",
+        hero_desc: "DeepSeek Harness Developer Preview (<span class='hero-highlight-text'>Only 8.7MB</span>) is open for worldwide Harness developers and open-sourced simultaneously.<br>Models, tools, skills, conversations, sandbox, memory, loops, orchestration, and UI are fully composable plugins.",
         btn_dl_mac_hero: "Download for Mac",
-        btn_dl_win_hero: "Download for Windows",
+        btn_dl_win_hero: "Download for Windows (Portable)",
         btn_github: "View GitHub",
         btn_docs: "Developer Docs",
         btn_all_versions: "All Versions",
