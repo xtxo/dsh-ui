@@ -266,7 +266,18 @@ pub fn get_injected_updater_script() -> &'static str {
         const isArm = /ARM64|aarch64/i.test(navigator.userAgent) || (isMac && (navigator.maxTouchPoints > 0 || screen.colorDepth === 24));
 
         const platformName = isMac ? "macOS" : (isWindows ? "Windows" : "Linux");
-        const platformDlText = isMac ? "🍏 下载 macOS 最新安装包 (.dmg)" : (isWindows ? "🪟 下载 Windows 最新版 (.exe)" : "🐧 下载 Linux 最新安装包");
+        const platformDlText = isMac ? "🍏 外部浏览器打开 Mac 安装包下载" : (isWindows ? "🪟 外部浏览器打开 Windows 版下载" : "🐧 外部浏览器打开 Linux 版下载");
+
+        function openExternal(url) {
+            if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) {
+                window.__TAURI__.core.invoke('open_browser', { url: url }).catch(function() {
+                    window.location.href = url;
+                });
+            } else {
+                window.location.href = url;
+            }
+        }
+        window.__dsh_open_external = openExternal;
 
         function openUpdateModal() {
             let existing = document.getElementById('dsh-update-dialog');
@@ -276,7 +287,7 @@ pub fn get_injected_updater_script() -> &'static str {
             modal.id = 'dsh-update-dialog';
             modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:9999999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
             modal.innerHTML = `
-                <div style="background:#0f172a; border:1px solid rgba(77,107,254,0.5); border-radius:16px; width:450px; padding:24px; color:#fff; box-shadow:0 24px 60px rgba(0,0,0,0.9);">
+                <div style="background:#0f172a; border:1px solid rgba(77,107,254,0.5); border-radius:16px; width:460px; padding:24px; color:#fff; box-shadow:0 24px 60px rgba(0,0,0,0.9);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span style="font-size:22px;">🐋</span>
@@ -286,7 +297,7 @@ pub fn get_injected_updater_script() -> &'static str {
                     </div>
                     
                     <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 14px; margin-bottom:16px; font-size:13px; line-height:1.9;">
-                        <div><strong>桌面客户端外壳 (${platformName})：</strong> <span style="color:#60a5fa; font-weight:600;">v0.1.7</span></div>
+                        <div><strong>桌面客户端外壳 (${platformName})：</strong> <span style="color:#60a5fa; font-weight:600;">v0.1.8</span></div>
                         <div><strong>智能体官方内核：</strong> <span style="color:#34d399; font-weight:600;">@deepseek-ai/dsh</span></div>
                         <div><strong>底层引擎架构：</strong> <span>Rust + 原生 WebKit/Webview (仅 8.7MB)</span></div>
                     </div>
@@ -294,7 +305,7 @@ pub fn get_injected_updater_script() -> &'static str {
                     <!-- Direct Action Area -->
                     <div id="dsh-update-action-box" style="background:rgba(77,107,254,0.08); border:1px solid rgba(77,107,254,0.25); border-radius:10px; padding:14px; margin-bottom:16px;">
                         <div id="dsh-check-status" style="font-size:12px; color:#cbd5e1; line-height:1.6;">
-                            支持<strong>官方内核热更新 (免重装)</strong> 与<strong>${platformName} 专属直链极速下载</strong>。
+                            支持<strong>官方内核热更新 (免重装)</strong> 与<strong>外部浏览器极速下载升级</strong>。
                         </div>
                         <div id="dsh-download-links" style="display:none; margin-top:10px; font-size:12px; line-height:1.8;">
                             <div id="dsh-direct-links-content"></div>
@@ -306,13 +317,13 @@ pub fn get_injected_updater_script() -> &'static str {
                             <button id="dsh-btn-hot-reload" style="flex:1; background:#10b981; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; transition:background 0.2s;">
                                 ⚡ 一键热更新内核
                             </button>
-                            <button id="dsh-btn-direct-download" style="flex:1.4; background:#2563eb; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; transition:background 0.2s;">
+                            <button id="dsh-btn-direct-download" style="flex:1.5; background:#2563eb; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; transition:background 0.2s;">
                                 ${platformDlText}
                             </button>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; padding:0 4px; margin-top:2px;">
-                            <a href="https://github.com/xtxo/dsh-ui/releases/latest" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗 GitHub Releases 发布页</a>
-                            <a href="https://xtxo.github.io/dsh-ui/" target="_blank" style="color:#60a5fa; text-decoration:none;">🏠 DSH-UI 官网主页</a>
+                            <a href="javascript:void(0)" onclick="window.__dsh_open_external('https://github.com/xtxo/dsh-ui/releases/latest')" style="color:#60a5fa; text-decoration:none;">🔗 GitHub Releases 发布页</a>
+                            <a href="javascript:void(0)" onclick="window.__dsh_open_external('https://xtxo.github.io/dsh-ui/')" style="color:#60a5fa; text-decoration:none;">🏠 DSH-UI 官网主页</a>
                         </div>
                     </div>
                 </div>
@@ -335,7 +346,7 @@ pub fn get_injected_updater_script() -> &'static str {
                 }, 1500);
             };
 
-            // 2. Direct Browser Link Open (100% Reliable without CORS / Blob errors)
+            // 2. Direct External Browser Open
             document.getElementById('dsh-btn-direct-download').onclick = async function() {
                 const status = document.getElementById('dsh-check-status');
                 const linksBox = document.getElementById('dsh-download-links');
@@ -363,24 +374,24 @@ pub fn get_injected_updater_script() -> &'static str {
                     const targetUrl = targetAsset ? targetAsset.browser_download_url : (release.html_url || 'https://github.com/xtxo/dsh-ui/releases/latest');
                     const fileName = targetAsset ? targetAsset.name : (isMac ? 'DeepSeek-Harness-macOS.dmg' : (isWindows ? 'DeepSeek-Harness-Portable.exe' : 'DeepSeek-Harness-Linux.deb'));
 
-                    // Open direct download link in browser
-                    window.open(targetUrl, '_blank');
-                    status.innerHTML = '<span style="color:#34d399; font-weight:bold;">🎉 已在浏览器中拉起最新下载：' + fileName + '</span>';
+                    // Open direct download link in default external browser
+                    openExternal(targetUrl);
+                    status.innerHTML = '<span style="color:#34d399; font-weight:bold;">🎉 已在系统默认浏览器中打开下载：' + fileName + '</span>';
 
                     // Also display all direct links nicely
                     if (isMac) {
                         const armAsset = assets.find(a => a.name.includes('aarch64.dmg'));
                         const intelAsset = assets.find(a => a.name.includes('x64.dmg') || a.name.includes('x86_64.dmg'));
                         let linksHtml = '<div style="color:#94a3b8; font-size:11px; margin-bottom:4px;">备选架构直链：</div>';
-                        if (armAsset) linksHtml += '<div>🍏 <a href="' + armAsset.browser_download_url + '" target="_blank" style="color:#60a5fa; text-decoration:underline;">Apple Silicon (M1~M4) DMG 下载</a></div>';
-                        if (intelAsset) linksHtml += '<div>🍏 <a href="' + intelAsset.browser_download_url + '" target="_blank" style="color:#60a5fa; text-decoration:underline;">Intel 架构 Mac DMG 下载</a></div>';
+                        if (armAsset) linksHtml += '<div>🍏 <a href="javascript:void(0)" onclick="window.__dsh_open_external(\'' + armAsset.browser_download_url + '\')" style="color:#60a5fa; text-decoration:underline;">Apple Silicon (M1~M4) DMG 下载</a></div>';
+                        if (intelAsset) linksHtml += '<div>🍏 <a href="javascript:void(0)" onclick="window.__dsh_open_external(\'' + intelAsset.browser_download_url + '\')" style="color:#60a5fa; text-decoration:underline;">Intel 架构 Mac DMG 下载</a></div>';
                         linksContent.innerHTML = linksHtml;
                         linksBox.style.display = 'block';
                     }
                 } catch (e) {
                     console.warn('Direct fetch failed, opening releases page directly:', e);
-                    window.open('https://github.com/xtxo/dsh-ui/releases/latest', '_blank');
-                    status.innerHTML = '<span style="color:#34d399; font-weight:bold;">🎉 已为你打开 GitHub Releases 最新发布页面！</span>';
+                    openExternal('https://github.com/xtxo/dsh-ui/releases/latest');
+                    status.innerHTML = '<span style="color:#34d399; font-weight:bold;">🎉 已在系统浏览器中打开 GitHub Releases 最新发布页面！</span>';
                 }
             };
         }
@@ -467,7 +478,7 @@ pub fn perform_update_check(window: &WebviewWindow, force: bool) {
                 let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
                 if let Ok(release) = serde_json::from_str::<serde_json::Value>(&stdout) {
                     if let Some(tag) = release.get("tag").and_then(|v| v.as_str()) {
-                        let current_tag = "v0.1.7";
+                        let current_tag = "v0.1.8";
                         if tag != current_tag && !tag.is_empty() {
                             println!("[DSH-UI] New client shell release found on GitHub: {}", tag);
                             let url = release.get("url").and_then(|v| v.as_str()).unwrap_or("https://github.com/xtxo/dsh-ui/releases/latest");
@@ -510,8 +521,8 @@ pub fn perform_update_check(window: &WebviewWindow, force: bool) {
                                             检测到客户端外壳已发布新版本 <strong>{name}</strong>，建议立即升级体验最新功能与修复。
                                         </div>
                                         <div style="display: flex; gap: 8px; margin-top: 4px;">
-                                            <button onclick="if(window.__dsh_open_modal) window.__dsh_open_modal(); this.parentElement.parentElement.remove();" style="background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; flex: 1;">
-                                                🚀 立即查看与更新
+                                            <button onclick="if(window.__dsh_open_external) {{ window.__dsh_open_external('{url}'); }} else if(window.__TAURI__ && window.__TAURI__.core) {{ window.__TAURI__.core.invoke('open_browser', {{ url: '{url}' }}); }} else {{ window.location.href='{url}'; }}; this.parentElement.parentElement.remove();" style="background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; flex: 1;">
+                                                🚀 打开下载最新版
                                             </button>
                                             <button onclick="this.parentElement.parentElement.remove()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">
                                                 稍后提醒
@@ -522,7 +533,8 @@ pub fn perform_update_check(window: &WebviewWindow, force: bool) {
                                 }})();
                                 "#,
                                 tag = tag,
-                                name = name
+                                name = name,
+                                url = url
                             );
                             let _ = win.eval(&js_code);
                         }

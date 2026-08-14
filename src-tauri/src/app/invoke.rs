@@ -13,6 +13,7 @@ use tauri_plugin_http::reqwest::header::{HeaderValue, COOKIE};
 use tauri_plugin_http::reqwest::{ClientBuilder, Request};
 
 use tauri::Theme;
+use tauri_plugin_opener::OpenerExt;
 
 static BADGE_COUNT: AtomicI64 = AtomicI64::new(0);
 const MAX_BADGE_COUNT: i64 = 99_999;
@@ -264,4 +265,11 @@ pub fn webview_navigate(window: WebviewWindow, action: String) -> Result<(), Str
             "Unknown webview_navigate action '{other}' (expected reload|back|forward)"
         )),
     }
+}
+
+#[command]
+pub fn open_browser(app: AppHandle, url: String) -> Result<(), String> {
+    app.opener()
+        .open_url(&url, None::<&str>)
+        .map_err(|e| format!("Failed to open browser: {}", e))
 }

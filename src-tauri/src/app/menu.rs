@@ -411,9 +411,9 @@ pub fn handle_menu_click(app_handle: &AppHandle, id: &str) {
             }
         }
         "check_updates" => {
-            if let Some(window) = focused_webview_window(app_handle) {
-                let _ = window.eval("if(window.__dsh_open_modal) window.__dsh_open_modal(); else alert('正在检查更新...');");
-            }
+            let _ = app_handle
+                .opener()
+                .open_url("https://github.com/xtxo/dsh-ui/releases/latest", None::<&str>);
         }
         _ => {}
     }
