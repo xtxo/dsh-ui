@@ -54,8 +54,87 @@ fn find_cached_dsh_script() -> Option<PathBuf> {
     None
 }
 
+/// 24-hour background check for official DeepSeek Harness upstream updates
+pub fn check_and_update_engine_24h(window: &WebviewWindow) {
+    let win = window.clone();
+    tauri::async_runtime::spawn(async move {
+        let state_dir = std::env::var("LOCALAPPDATA").unwrap_or_else(|_| ".".to_string());
+        let state_file = std::path::PathBuf::from(state_dir).join("dsh-ui").join("update_state.json");
+
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs();
+
+        // 1. Check if 24 hours (86400 seconds) have passed since last check
+        if let Ok(content) = std::fs::read_to_string(&state_file) {
+            if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
+                if let Some(last_check) = json.get("last_check").and_then(|v| v.as_u64()) {
+                    if now < last_check + 86400 {
+                        // Checked within 24 hours, skip network request for lightning fast startup
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Save current timestamp
+        if let Some(parent) = state_file.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        let _ = std::fs::write(&state_file, format!(r#"{{"last_check": {}}}"#, now));
+
+        // 2. Fetch latest official version from npm registry asynchronously
+        let mut cmd = std::process::Command::new("node");
+        cmd.args(&["-e", r#"
+            const https = require('https');
+            const req = https.get('https://registry.npmjs.org/@deepseek-ai/dsh/latest', { timeout: 3000 }, res => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                    try {
+                        const json = JSON.parse(data);
+                        if (json && json.version) {
+                            process.stdout.write(json.version);
+                        }
+                    } catch(e) {}
+                });
+            });
+            req.on('error', () => {});
+        "#]);
+
+        #[cfg(target_os = "windows")]
+        cmd.creation_flags(0x08000000);
+
+        if let Ok(output) = cmd.output() {
+            if output.status.success() {
+                let latest_ver = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                if !latest_ver.is_empty() {
+                    println!("[DeepSeek Harness] Upstream official version check (24h): v{}", latest_ver);
+                    let js_code = format!(
+                        r#"
+                        if (typeof window !== 'undefined' && window.localStorage) {{
+                            const stored = window.localStorage.getItem('dsh_official_ver');
+                            if (stored && stored !== '{0}') {{
+                                console.log('[DSH-UI] New official version detected: v{0}');
+                            }}
+                            window.localStorage.setItem('dsh_official_ver', '{0}');
+                        }}
+                        "#,
+                        latest_ver
+                    );
+                    let _ = win.eval(&js_code);
+                }
+            }
+        }
+    });
+}
+
 pub fn start_backend_service_if_needed(_app_handle: &AppHandle, window: WebviewWindow) {
     let target_port: u16 = 3080;
+
+    // Trigger 24-hour non-blocking update check
+    check_and_update_engine_24h(&window);
 
     if is_backend_running(target_port) {
         println!("[DeepSeek Harness] Backend is already running on port {}", target_port);
