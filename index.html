@@ -311,43 +311,7 @@
       color: #ffffff;
     }
 
-    /* Inline Quick Command Badge */
-    .quick-cli-bar {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      background: rgba(13, 20, 36, 0.75);
-      border: 1px solid var(--border);
-      padding: 8px 16px;
-      border-radius: 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 13px;
-      color: #38bdf8;
-      width: fit-content;
-      max-width: 100%;
-    }
 
-    .quick-cli-bar .cli-prefix {
-      color: var(--primary);
-      user-select: none;
-    }
-
-    .quick-cli-bar .cli-copy {
-      background: transparent;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      padding: 2px 6px;
-      border-radius: 6px;
-      transition: all 0.2s;
-    }
-
-    .quick-cli-bar .cli-copy:hover {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.1);
-    }
 
     /* Right Side Hero App Window Mockup (Where terminal card was) */
     .hero-right {
@@ -753,17 +717,7 @@
             </a>
           </div>
 
-          <!-- Quick Terminal Command Pill -->
-          <div class="quick-cli-bar">
-            <span class="cli-prefix">$</span>
-            <span id="quick-cmd-text">npx @deepseek-ai/dsh web</span>
-            <button class="cli-copy" onclick="copyQuickCmd()" title="复制命令">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-            </button>
-          </div>
+
         </div>
       </div>
 
@@ -1023,12 +977,7 @@
       });
     }
 
-    function copyQuickCmd() {
-      const text = document.getElementById('quick-cmd-text').innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        alert(currentLang === 'zh' ? '已复制命令：' + text : 'Copied: ' + text);
-      });
-    }
+
   </script>
 </body>
 </html>
