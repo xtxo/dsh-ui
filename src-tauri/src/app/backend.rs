@@ -253,78 +253,20 @@ fn find_cached_dsh_script() -> Option<PathBuf> {
     None
 }
 
-/// Script that injects the interactive in-app direct downloader with progress bar and hot reload
+/// Script that injects the interactive in-app updater with platform-specific download logic (macOS / Windows / Linux)
 pub fn get_injected_updater_script() -> &'static str {
     r#"
     (function() {
-        if (window.__dsh_widget_injected) return;
-        window.__dsh_widget_injected = true;
+        if (window.__dsh_updater_injected) return;
+        window.__dsh_updater_injected = true;
 
-        function injectWidget() {
-            if (document.getElementById('dsh-version-widget')) return;
-            if (!document.body) {
-                setTimeout(injectWidget, 500);
-                return;
-            }
+        const isMac = /Macintosh|Mac OS X/i.test(navigator.userAgent);
+        const isWindows = /Windows/i.test(navigator.userAgent);
+        const isLinux = /Linux/i.test(navigator.userAgent) && !/Android/i.test(navigator.userAgent);
+        const isArm = /ARM64|aarch64/i.test(navigator.userAgent) || (isMac && (navigator.maxTouchPoints > 0 || screen.colorDepth === 24));
 
-            const style = document.createElement('style');
-            style.textContent = `
-                #dsh-version-widget {
-                    position: fixed;
-                    bottom: 14px;
-                    right: 18px;
-                    z-index: 999999;
-                    background: rgba(15, 23, 42, 0.88);
-                    border: 1px solid rgba(77, 107, 254, 0.45);
-                    color: #94a3b8;
-                    font-size: 11px;
-                    padding: 5px 12px;
-                    border-radius: 20px;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    cursor: pointer;
-                    backdrop-filter: blur(12px);
-                    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-                    transition: all 0.2s ease;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    user-select: none;
-                }
-                #dsh-version-widget:hover {
-                    background: rgba(30, 41, 59, 0.98);
-                    border-color: rgba(77, 107, 254, 0.9);
-                    color: #60a5fa;
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 20px rgba(77, 107, 254, 0.35);
-                }
-                .dsh-progress-bar-bg {
-                    width: 100%;
-                    height: 8px;
-                    background: rgba(255, 255, 255, 0.1);
-                    border-radius: 4px;
-                    overflow: hidden;
-                    margin-top: 8px;
-                }
-                .dsh-progress-bar-fill {
-                    height: 100%;
-                    width: 0%;
-                    background: linear-gradient(90deg, #3b82f6, #60a5fa);
-                    border-radius: 4px;
-                    transition: width 0.15s ease;
-                }
-            `;
-            document.head.appendChild(style);
-
-            const widget = document.createElement('div');
-            widget.id = 'dsh-version-widget';
-            widget.innerHTML = '<span>🐋</span> <span style="font-weight:700; color:#60a5fa; background:rgba(77,107,254,0.22); padding:1px 7px; border-radius:10px; border:1px solid rgba(77,107,254,0.45); font-size:10px; letter-spacing:0.02em;">v0.1.5</span> <span style="font-weight:600; color:#e2e8f0;">DSH-UI</span> <span style="opacity:0.4;">·</span> <span style="color:#38bdf8;">检查更新</span>';
-            
-            widget.onclick = function(e) {
-                e.stopPropagation();
-                openUpdateModal();
-            };
-            document.body.appendChild(widget);
-        }
+        const platformName = isMac ? "macOS" : (isWindows ? "Windows" : "Linux");
+        const platformDlText = isMac ? "🍏 下载 macOS 最新安装包 (.dmg)" : (isWindows ? "🪟 应用内直下免安装 EXE" : "🐧 下载 Linux 最新安装包");
 
         function openUpdateModal() {
             let existing = document.getElementById('dsh-update-dialog');
@@ -334,33 +276,33 @@ pub fn get_injected_updater_script() -> &'static str {
             modal.id = 'dsh-update-dialog';
             modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:9999999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
             modal.innerHTML = `
-                <div style="background:#0f172a; border:1px solid rgba(77,107,254,0.5); border-radius:16px; width:420px; padding:24px; color:#fff; box-shadow:0 24px 60px rgba(0,0,0,0.9);">
+                <div style="background:#0f172a; border:1px solid rgba(77,107,254,0.5); border-radius:16px; width:440px; padding:24px; color:#fff; box-shadow:0 24px 60px rgba(0,0,0,0.9);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span style="font-size:22px;">🐋</span>
-                            <span style="font-weight:700; font-size:16px; color:#f8fafc;">DSH-UI 版本中心 &amp; 一键热更新</span>
+                            <span style="font-weight:700; font-size:16px; color:#f8fafc;">DSH-UI 版本中心 &amp; 升级</span>
                         </div>
                         <button id="dsh-modal-close" style="background:none; border:none; color:#94a3b8; font-size:22px; cursor:pointer; line-height:1;">&times;</button>
                     </div>
                     
                     <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 14px; margin-bottom:16px; font-size:13px; line-height:1.9;">
-                        <div><strong>桌面客户端外壳：</strong> <span style="color:#60a5fa; font-weight:600;">v0.1.5 (最新)</span></div>
+                        <div><strong>桌面客户端外壳 (${platformName})：</strong> <span style="color:#60a5fa; font-weight:600;">v0.1.6</span></div>
                         <div><strong>智能体官方内核：</strong> <span style="color:#34d399; font-weight:600;">@deepseek-ai/dsh</span></div>
-                        <div><strong>底层引擎架构：</strong> <span>Rust + Web 容器 (仅 8.7MB)</span></div>
+                        <div><strong>底层引擎架构：</strong> <span>Rust + 原生 WebKit/Webview (仅 8.7MB)</span></div>
                     </div>
 
                     <!-- Direct Update Action Area -->
                     <div id="dsh-update-action-box" style="background:rgba(77,107,254,0.08); border:1px solid rgba(77,107,254,0.25); border-radius:10px; padding:14px; margin-bottom:16px;">
                         <div id="dsh-check-status" style="font-size:12px; color:#cbd5e1; line-height:1.6;">
-                            支持<strong>内核热更新</strong>与<strong>应用内直接下载升级</strong>，全程无需离开客户端。
+                            支持<strong>官方内核热更新</strong>与<strong>${platformName} 专属安装包下载</strong>。
                         </div>
                         <div id="dsh-progress-container" style="display:none; margin-top:10px;">
                             <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8;">
-                                <span id="dsh-progress-text">正在极速下载...</span>
+                                <span id="dsh-progress-text">正在下载...</span>
                                 <span id="dsh-progress-percent">0%</span>
                             </div>
-                            <div class="dsh-progress-bar-bg">
-                                <div id="dsh-progress-bar" class="dsh-progress-bar-fill"></div>
+                            <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden; margin-top:8px;">
+                                <div id="dsh-progress-bar" style="height:100%; width:0%; background:linear-gradient(90deg, #3b82f6, #60a5fa); border-radius:4px; transition:width 0.15s ease;"></div>
                             </div>
                         </div>
                     </div>
@@ -369,8 +311,8 @@ pub fn get_injected_updater_script() -> &'static str {
                         <button id="dsh-btn-hot-reload" style="flex:1; background:#10b981; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; transition:background 0.2s;">
                             ⚡ 一键热更新内核
                         </button>
-                        <button id="dsh-btn-direct-download" style="flex:1; background:#2563eb; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; transition:background 0.2s;">
-                            🚀 应用内直下 EXE
+                        <button id="dsh-btn-direct-download" style="flex:1.2; background:#2563eb; color:#fff; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; transition:background 0.2s;">
+                            ${platformDlText}
                         </button>
                     </div>
                 </div>
@@ -380,7 +322,7 @@ pub fn get_injected_updater_script() -> &'static str {
             document.getElementById('dsh-modal-close').onclick = () => modal.remove();
             modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
 
-            // 1. Hot Reload Action (无需重启，3秒刷新)
+            // 1. Hot Reload Action
             document.getElementById('dsh-btn-hot-reload').onclick = function() {
                 const status = document.getElementById('dsh-check-status');
                 const progressBox = document.getElementById('dsh-progress-container');
@@ -412,7 +354,7 @@ pub fn get_injected_updater_script() -> &'static str {
                 }, 2200);
             };
 
-            // 2. Direct In-App Stream Download with Real Progress Bar
+            // 2. Direct In-App Stream Download with platform matching
             document.getElementById('dsh-btn-direct-download').onclick = async function() {
                 const status = document.getElementById('dsh-check-status');
                 const progressBox = document.getElementById('dsh-progress-container');
@@ -421,21 +363,43 @@ pub fn get_injected_updater_script() -> &'static str {
                 const pPercent = document.getElementById('dsh-progress-percent');
                 
                 progressBox.style.display = 'block';
-                status.innerHTML = '<span style="color:#60a5fa;">🚀 正在应用内直接下载最新免安装 EXE...</span>';
-                
-                const targetUrl = 'https://github.com/xtxo/dsh-ui/releases/download/v0.1.3/DeepSeek-Harness-Portable.exe';
-                
+                status.innerHTML = '<span style="color:#60a5fa;">🚀 正在获取最新 ' + platformName + ' 安装包...</span>';
+
                 try {
+                    const res = await fetch('https://api.github.com/repos/xtxo/dsh-ui/releases/latest');
+                    if (!res.ok) throw new Error('Release API error');
+                    const release = await res.json();
+                    const assets = release.assets || [];
+
+                    let targetAsset = null;
+                    if (isMac) {
+                        targetAsset = isArm
+                            ? (assets.find(a => a.name.includes('aarch64.dmg')) || assets.find(a => a.name.endsWith('.dmg')))
+                            : (assets.find(a => a.name.includes('x64.dmg') || a.name.includes('x86_64.dmg')) || assets.find(a => a.name.endsWith('.dmg')));
+                    } else if (isWindows) {
+                        targetAsset = assets.find(a => a.name.includes('Portable.exe')) || assets.find(a => a.name.endsWith('.exe'));
+                    } else {
+                        targetAsset = assets.find(a => a.name.endsWith('.deb') || a.name.endsWith('.AppImage'));
+                    }
+
+                    const targetUrl = targetAsset ? targetAsset.browser_download_url : (release.html_url || 'https://github.com/xtxo/dsh-ui/releases/latest');
+                    const fileName = targetAsset ? targetAsset.name : (isMac ? 'DeepSeek-Harness-macOS.dmg' : (isWindows ? 'DeepSeek-Harness-Portable.exe' : 'DeepSeek-Harness-Linux.deb'));
+
+                    status.innerHTML = '<span style="color:#60a5fa;">🚀 正在高速下载 ' + fileName + '...</span>';
+
                     const response = await fetch(targetUrl);
-                    if (!response.ok) throw new Error('Network error: ' + response.status);
-                    
+                    if (!response.ok) {
+                        window.open(targetUrl, '_blank');
+                        status.innerHTML = '<span style="color:#34d399; font-weight:bold;">🎉 已在浏览器中打开 ' + fileName + ' 下载！</span>';
+                        return;
+                    }
+
                     const contentLength = response.headers.get('content-length');
-                    const total = contentLength ? parseInt(contentLength, 10) : 8791552;
+                    const total = contentLength ? parseInt(contentLength, 10) : (isMac ? 6500000 : 8800000);
                     let loaded = 0;
 
                     const reader = response.body.getReader();
                     const chunks = [];
-                    const startTime = Date.now();
 
                     while (true) {
                         const { done, value } = await reader.read();
@@ -456,39 +420,25 @@ pub fn get_injected_updater_script() -> &'static str {
                     const blobUrl = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = blobUrl;
-                    a.download = 'DeepSeek-Harness-Portable.exe';
+                    a.download = fileName;
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
                     URL.revokeObjectURL(blobUrl);
 
-                    status.innerHTML = '<span style="color:#34d399; font-weight:bold;">🎉 下载完成！最新免安装 EXE 已保存，双击即可无缝运行！</span>';
+                    const successTip = isMac
+                        ? '🎉 下载完成！最新 DMG 已保存至下载目录，双击打开即可拖拽更新！'
+                        : '🎉 下载完成！最新安装包已保存至下载目录！';
+                    status.innerHTML = '<span style="color:#34d399; font-weight:bold;">' + successTip + '</span>';
                 } catch (e) {
-                    console.warn('Direct stream failed, falling back to simulated stream:', e);
-                    // Fallback visual stream simulation
-                    let p = 0;
-                    const simTimer = setInterval(() => {
-                        p += 10;
-                        if (p >= 100) {
-                            p = 100;
-                            clearInterval(simTimer);
-                            bar.style.width = '100%';
-                            pPercent.innerText = '100%';
-                            pText.innerText = '8.7 MB / 8.7 MB (完成)';
-                            status.innerHTML = '<span style="color:#34d399; font-weight:bold;">🎉 下载完成！请查看下载目录中的 DeepSeek-Harness-Portable.exe</span>';
-                            window.open(targetUrl, '_blank');
-                        } else {
-                            bar.style.width = p + '%';
-                            pPercent.innerText = p + '%';
-                            pText.innerText = `${(p * 0.087).toFixed(1)} MB / 8.7 MB`;
-                        }
-                    }, 180);
+                    console.warn('Download stream failed, opening direct link:', e);
+                    window.open('https://github.com/xtxo/dsh-ui/releases/latest', '_blank');
+                    status.innerHTML = '<span style="color:#34d399; font-weight:bold;">🎉 已为你打开 GitHub Releases 官方下载页面！</span>';
                 }
             };
         }
 
-        setTimeout(injectWidget, 1000);
-        setInterval(injectWidget, 3000);
+        window.__dsh_open_modal = openUpdateModal;
     })();
     "#
 }
@@ -570,7 +520,7 @@ pub fn perform_update_check(window: &WebviewWindow, force: bool) {
                 let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
                 if let Ok(release) = serde_json::from_str::<serde_json::Value>(&stdout) {
                     if let Some(tag) = release.get("tag").and_then(|v| v.as_str()) {
-                        let current_tag = "v0.1.5";
+                        let current_tag = "v0.1.6";
                         if tag != current_tag && !tag.is_empty() {
                             println!("[DSH-UI] New client shell release found on GitHub: {}", tag);
                             let url = release.get("url").and_then(|v| v.as_str()).unwrap_or("https://github.com/xtxo/dsh-ui/releases/latest");
@@ -614,7 +564,7 @@ pub fn perform_update_check(window: &WebviewWindow, force: bool) {
                                         </div>
                                         <div style="display: flex; gap: 8px; margin-top: 4px;">
                                             <button onclick="if(window.__dsh_open_modal) window.__dsh_open_modal(); this.parentElement.parentElement.remove();" style="background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; flex: 1;">
-                                                🚀 应用内直下更新
+                                                🚀 立即查看与更新
                                             </button>
                                             <button onclick="this.parentElement.parentElement.remove()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">
                                                 稍后提醒

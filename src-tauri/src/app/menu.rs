@@ -40,12 +40,20 @@ pub fn set_app_menu(
 }
 
 fn app_menu(app: &AppHandle<Wry>) -> tauri::Result<Submenu<Wry>> {
-    let app_menu = Submenu::new(app, "Pake", true)?;
+    let app_menu = Submenu::new(app, "DeepSeek Harness", true)?;
     let about_metadata = AboutMetadata::default();
     app_menu.append(&PredefinedMenuItem::about(
         app,
-        Some("Pake"),
+        Some("DeepSeek Harness"),
         Some(about_metadata),
+    )?)?;
+    app_menu.append(&PredefinedMenuItem::separator(app)?)?;
+    app_menu.append(&MenuItem::with_id(
+        app,
+        "check_updates",
+        "Check for Updates... (检查更新)",
+        true,
+        None::<&str>,
     )?)?;
     app_menu.append(&PredefinedMenuItem::separator(app)?)?;
     app_menu.append(&PredefinedMenuItem::services(app, None)?)?;
@@ -375,6 +383,11 @@ pub fn handle_menu_click(app_handle: &AppHandle, id: &str) {
             if let Some(window) = focused_webview_window(app_handle) {
                 let is_on_top = window.is_always_on_top().unwrap_or(false);
                 let _ = window.set_always_on_top(!is_on_top);
+            }
+        }
+        "check_updates" => {
+            if let Some(window) = focused_webview_window(app_handle) {
+                let _ = window.eval("if(window.__dsh_open_modal) window.__dsh_open_modal(); else alert('正在检查更新...');");
             }
         }
         _ => {}
