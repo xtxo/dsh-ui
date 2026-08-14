@@ -885,7 +885,7 @@
     <!-- Download Section -->
     <div id="download" class="section-title-wrap">
       <h2 class="section-title" data-i18n="dl_sec_title">全部安装包下载</h2>
-      <p class="section-subtitle" data-i18n="dl_sec_desc">选择适用于你操作系统的安装包或可执行文件 (v0.1.4)</p>
+      <p class="section-subtitle" data-i18n="dl_sec_desc">选择适用于你操作系统的安装包或可执行文件 (<span class="latest-ver-badge">v0.1.4</span>)</p>
     </div>
 
     <div class="download-grid">
@@ -898,10 +898,10 @@
         </div>
         <div class="download-os-name">macOS</div>
         <div class="download-os-desc">Apple Silicon (M1~M4) / Intel</div>
-        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.4/DeepSeek.Harness_0.1.4_aarch64.dmg" class="dl-btn" data-i18n="btn_dl_mac">
+        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.4/DeepSeek.Harness_0.1.4_aarch64.dmg" class="dl-btn" id="btn-dl-mac-arm" data-i18n="btn_dl_mac">
           下载 Apple Silicon (.dmg)
         </a>
-        <a href="https://github.com/xtxo/dsh-ui/releases/tag/v0.1.4" class="sub-link" data-i18n="btn_dl_mac_intel">下载 Intel 架构 (.dmg)</a>
+        <a href="https://github.com/xtxo/dsh-ui/releases/tag/v0.1.4" class="sub-link" id="btn-dl-mac-intel" data-i18n="btn_dl_mac_intel">下载 Intel 架构 (.dmg)</a>
       </div>
 
       <!-- Windows -->
@@ -913,13 +913,13 @@
         </div>
         <div class="download-os-name">Windows</div>
         <div class="download-os-desc">Windows 10 / 11 (64-bit)</div>
-        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.4/DeepSeek-Harness-Portable.exe" class="dl-btn" data-i18n="btn_dl_win">
+        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.4/DeepSeek-Harness-Portable.exe" class="dl-btn" id="btn-dl-win-portable" data-i18n="btn_dl_win">
           下载免安装绿色版 (.exe 直接运行)
         </a>
         <div style="display: flex; gap: 12px; margin-top: 6px;">
-          <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.4/DeepSeek.Harness_0.1.4_x64-setup.exe" class="sub-link" data-i18n="btn_dl_win_setup">下载 Setup 安装版</a>
+          <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.4/DeepSeek.Harness_0.1.4_x64-setup.exe" class="sub-link" id="btn-dl-win-setup" data-i18n="btn_dl_win_setup">下载 Setup 安装版</a>
           <span style="color: var(--text-dim);">·</span>
-          <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.4/DeepSeek.Harness_0.1.4_x64_zh-CN.msi" class="sub-link" data-i18n="btn_dl_win_msi">下载 .msi 安装包</a>
+          <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.4/DeepSeek.Harness_0.1.4_x64_zh-CN.msi" class="sub-link" id="btn-dl-win-msi" data-i18n="btn_dl_win_msi">下载 .msi 安装包</a>
         </div>
       </div>
 
@@ -1135,7 +1135,64 @@
       });
     }
 
+    // Auto-detect & dynamically sync latest download links from GitHub Releases
+    async function syncLatestRelease() {
+      try {
+        const res = await fetch('https://api.github.com/repos/xtxo/dsh-ui/releases/latest');
+        if (!res.ok) return;
+        const release = await res.json();
+        const tag = release.tag_name;
+        if (!tag) return;
 
+        // Update version badge text
+        document.querySelectorAll('.latest-ver-badge').forEach(el => {
+          el.innerText = tag;
+        });
+
+        const assets = release.assets || [];
+        const macArm = assets.find(a => a.name.includes('aarch64.dmg') || a.name.includes('arm64.dmg'));
+        const macIntel = assets.find(a => a.name.includes('x64.dmg') || a.name.includes('x86_64.dmg'));
+        const winPortable = assets.find(a => a.name.includes('Portable.exe'));
+        const winSetup = assets.find(a => a.name.includes('setup.exe') || a.name.includes('Setup.exe'));
+        const winMsiZh = assets.find(a => a.name.includes('zh-CN.msi'));
+        const winMsiEn = assets.find(a => a.name.includes('en-US.msi') || a.name.endsWith('.msi'));
+
+        // Update Mac download buttons
+        if (macArm) {
+          const heroMac = document.getElementById('btn-hero-mac');
+          if (heroMac) heroMac.href = macArm.browser_download_url;
+          const cardMacArm = document.getElementById('btn-dl-mac-arm');
+          if (cardMacArm) cardMacArm.href = macArm.browser_download_url;
+        }
+        if (macIntel) {
+          const cardMacIntel = document.getElementById('btn-dl-mac-intel');
+          if (cardMacIntel) cardMacIntel.href = macIntel.browser_download_url;
+        } else if (release.html_url) {
+          const cardMacIntel = document.getElementById('btn-dl-mac-intel');
+          if (cardMacIntel) cardMacIntel.href = release.html_url;
+        }
+
+        // Update Windows download buttons
+        if (winPortable) {
+          const heroWin = document.getElementById('btn-hero-win');
+          if (heroWin) heroWin.href = winPortable.browser_download_url;
+          const cardWinPort = document.getElementById('btn-dl-win-portable');
+          if (cardWinPort) cardWinPort.href = winPortable.browser_download_url;
+        }
+        if (winSetup) {
+          const cardWinSetup = document.getElementById('btn-dl-win-setup');
+          if (cardWinSetup) cardWinSetup.href = winSetup.browser_download_url;
+        }
+        if (winMsiZh) {
+          const cardWinMsi = document.getElementById('btn-dl-win-msi');
+          if (cardWinMsi) cardWinMsi.href = winMsiZh.browser_download_url;
+        }
+      } catch (e) {
+        console.warn('Sync latest release failed:', e);
+      }
+    }
+
+    syncLatestRelease();
   </script>
 </body>
 </html>
