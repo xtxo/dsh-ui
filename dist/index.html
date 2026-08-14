@@ -176,10 +176,14 @@
         // Not ready yet
       }
 
-      if (attempts === 20) {
-        statusText.innerText = '首次启动正在下载环境组件，请稍候...';
-      } else if (attempts === 40) {
-        statusText.innerText = '正在初始化智能体内核与插件...';
+      if (attempts === 15) {
+        statusText.innerText = '首次启动正在通过国内镜像源下载环境组件...';
+      } else if (attempts === 35) {
+        statusText.innerText = '正在初始化智能体内核与插件系统...';
+      } else if (attempts === 70) {
+        statusText.innerText = '首次配置组件较多，正在高速部署中，请稍候...';
+      } else if (attempts === 120) {
+        statusText.innerText = '正在进行端口握手与环境探针...';
       }
       
       setTimeout(checkServer, 300);

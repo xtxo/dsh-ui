@@ -8,6 +8,8 @@ use tauri::{AppHandle, Url, WebviewWindow};
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
+const NPM_MIRROR_REGISTRY: &str = "https://registry.npmmirror.com";
+
 static BACKEND_CHILD: Mutex<Option<Child>> = Mutex::new(None);
 
 pub fn is_backend_running(port: u16) -> bool {
@@ -15,39 +17,236 @@ pub fn is_backend_running(port: u16) -> bool {
     TcpStream::connect_timeout(&addr, Duration::from_millis(400)).is_ok()
 }
 
-fn find_cached_dsh_script() -> Option<PathBuf> {
-    // 1. Check local ./server
-    if let Ok(exe_path) = std::env::current_exe() {
-        if let Some(exe_dir) = exe_path.parent() {
-            let candidate = exe_dir.join("server").join("node_modules").join("@deepseek-ai").join("dsh").join("lib").join("bin.js");
-            if candidate.exists() {
-                return Some(candidate);
-            }
-        }
-    }
+#[cfg(not(target_os = "windows"))]
+pub fn get_extended_path() -> String {
+    let current_path = std::env::var("PATH").unwrap_or_default();
+    let mut paths: Vec<String> = vec![
+        "/opt/homebrew/bin".to_string(),
+        "/opt/homebrew/sbin".to_string(),
+        "/usr/local/bin".to_string(),
+        "/usr/local/sbin".to_string(),
+        "/usr/bin".to_string(),
+        "/bin".to_string(),
+        "/usr/sbin".to_string(),
+        "/sbin".to_string(),
+    ];
 
-    // 2. Check %LOCALAPPDATA%\npm-cache\_npx
-    #[cfg(target_os = "windows")]
-    if let Ok(local_appdata) = std::env::var("LOCALAPPDATA") {
-        let npx_dir = PathBuf::from(local_appdata).join("npm-cache").join("_npx");
-        if npx_dir.exists() {
-            if let Ok(entries) = std::fs::read_dir(npx_dir) {
+    if let Ok(home) = std::env::var("HOME") {
+        let home_path = PathBuf::from(&home);
+        paths.push(home_path.join(".volta/bin").to_string_lossy().to_string());
+        paths.push(home_path.join(".fnm/current/bin").to_string_lossy().to_string());
+        paths.push(home_path.join(".local/share/fnm/current/bin").to_string_lossy().to_string());
+        paths.push(home_path.join(".bun/bin").to_string_lossy().to_string());
+        paths.push(home_path.join(".pnpm").to_string_lossy().to_string());
+        paths.push(home_path.join(".yarn/bin").to_string_lossy().to_string());
+        paths.push(home_path.join(".cargo/bin").to_string_lossy().to_string());
+        paths.push(home_path.join(".local/bin").to_string_lossy().to_string());
+        paths.push(home_path.join("bin").to_string_lossy().to_string());
+
+        // Check NVM installations
+        let nvm_dir = home_path.join(".nvm").join("versions").join("node");
+        if nvm_dir.exists() {
+            if let Ok(entries) = std::fs::read_dir(nvm_dir) {
                 for entry in entries.flatten() {
-                    let candidate = entry.path().join("node_modules").join("@deepseek-ai").join("dsh").join("lib").join("bin.js");
-                    if candidate.exists() {
-                        return Some(candidate);
+                    let bin_dir = entry.path().join("bin");
+                    if bin_dir.exists() {
+                        paths.push(bin_dir.to_string_lossy().to_string());
                     }
                 }
             }
         }
     }
 
-    // 3. Check %APPDATA%\npm\node_modules
+    if !current_path.is_empty() {
+        paths.push(current_path);
+    }
+
+    paths.join(":")
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn find_node_executable() -> String {
+    let candidates = [
+        "/opt/homebrew/bin/node",
+        "/usr/local/bin/node",
+        "/usr/bin/node",
+    ];
+    for c in &candidates {
+        if std::path::Path::new(c).exists() {
+            return c.to_string();
+        }
+    }
+
+    if let Ok(home) = std::env::var("HOME") {
+        let home_path = PathBuf::from(&home);
+        let nvm_dir = home_path.join(".nvm").join("versions").join("node");
+        if nvm_dir.exists() {
+            if let Ok(entries) = std::fs::read_dir(nvm_dir) {
+                for entry in entries.flatten() {
+                    let node_bin = entry.path().join("bin").join("node");
+                    if node_bin.exists() {
+                        return node_bin.to_string_lossy().to_string();
+                    }
+                }
+            }
+        }
+        let fnm_node = home_path.join(".local/share/fnm/current/bin/node");
+        if fnm_node.exists() {
+            return fnm_node.to_string_lossy().to_string();
+        }
+        let volta_node = home_path.join(".volta/bin/node");
+        if volta_node.exists() {
+            return volta_node.to_string_lossy().to_string();
+        }
+    }
+
+    "node".to_string()
+}
+
+pub fn find_dsh_cli() -> Option<PathBuf> {
+    #[cfg(not(target_os = "windows"))]
+    {
+        let candidates = [
+            PathBuf::from("/opt/homebrew/bin/dsh"),
+            PathBuf::from("/usr/local/bin/dsh"),
+            PathBuf::from("/usr/bin/dsh"),
+        ];
+        for c in &candidates {
+            if c.exists() {
+                return Some(c.clone());
+            }
+        }
+
+        if let Ok(home) = std::env::var("HOME") {
+            let home_path = PathBuf::from(&home);
+            let nvm_dir = home_path.join(".nvm").join("versions").join("node");
+            if nvm_dir.exists() {
+                if let Ok(entries) = std::fs::read_dir(nvm_dir) {
+                    for entry in entries.flatten() {
+                        let dsh_bin = entry.path().join("bin").join("dsh");
+                        if dsh_bin.exists() {
+                            return Some(dsh_bin);
+                        }
+                    }
+                }
+            }
+            let fnm_dsh = home_path.join(".local/share/fnm/current/bin/dsh");
+            if fnm_dsh.exists() {
+                return Some(fnm_dsh);
+            }
+            let volta_dsh = home_path.join(".volta/bin/dsh");
+            if volta_dsh.exists() {
+                return Some(volta_dsh);
+            }
+        }
+    }
+
     #[cfg(target_os = "windows")]
-    if let Ok(appdata) = std::env::var("APPDATA") {
-        let candidate = PathBuf::from(appdata).join("npm").join("node_modules").join("@deepseek-ai").join("dsh").join("lib").join("bin.js");
-        if candidate.exists() {
-            return Some(candidate);
+    {
+        if let Ok(appdata) = std::env::var("APPDATA") {
+            let candidate = PathBuf::from(appdata).join("npm").join("dsh.cmd");
+            if candidate.exists() {
+                return Some(candidate);
+            }
+        }
+    }
+
+    None
+}
+
+fn find_cached_dsh_script() -> Option<PathBuf> {
+    // 1. Check local ./server or App bundle Resources/server
+    if let Ok(exe_path) = std::env::current_exe() {
+        if let Some(exe_dir) = exe_path.parent() {
+            let candidate = exe_dir.join("server").join("node_modules").join("@deepseek-ai").join("dsh").join("lib").join("bin.js");
+            if candidate.exists() {
+                return Some(candidate);
+            }
+            // Check macOS bundle Resources
+            let resource_candidate = exe_dir.join("../Resources/server/node_modules/@deepseek-ai/dsh/lib/bin.js");
+            if resource_candidate.exists() {
+                return Some(resource_candidate);
+            }
+        }
+    }
+
+    // 2. Check Windows locations
+    #[cfg(target_os = "windows")]
+    {
+        if let Ok(local_appdata) = std::env::var("LOCALAPPDATA") {
+            let npx_dir = PathBuf::from(local_appdata).join("npm-cache").join("_npx");
+            if npx_dir.exists() {
+                if let Ok(entries) = std::fs::read_dir(npx_dir) {
+                    for entry in entries.flatten() {
+                        let candidate = entry.path().join("node_modules").join("@deepseek-ai").join("dsh").join("lib").join("bin.js");
+                        if candidate.exists() {
+                            return Some(candidate);
+                        }
+                    }
+                }
+            }
+        }
+
+        if let Ok(appdata) = std::env::var("APPDATA") {
+            let candidate = PathBuf::from(appdata).join("npm").join("node_modules").join("@deepseek-ai").join("dsh").join("lib").join("bin.js");
+            if candidate.exists() {
+                return Some(candidate);
+            }
+        }
+    }
+
+    // 3. Check macOS / Linux common paths
+    #[cfg(not(target_os = "windows"))]
+    {
+        let direct_candidates = [
+            PathBuf::from("/opt/homebrew/lib/node_modules/@deepseek-ai/dsh/lib/bin.js"),
+            PathBuf::from("/usr/local/lib/node_modules/@deepseek-ai/dsh/lib/bin.js"),
+            PathBuf::from("/usr/lib/node_modules/@deepseek-ai/dsh/lib/bin.js"),
+        ];
+        for c in &direct_candidates {
+            if c.exists() {
+                return Some(c.clone());
+            }
+        }
+
+        if let Ok(home) = std::env::var("HOME") {
+            let home_path = PathBuf::from(&home);
+            // ~/.npm/_npx/...
+            let npx_dir = home_path.join(".npm").join("_npx");
+            if npx_dir.exists() {
+                if let Ok(entries) = std::fs::read_dir(npx_dir) {
+                    for entry in entries.flatten() {
+                        let candidate = entry.path().join("node_modules").join("@deepseek-ai").join("dsh").join("lib").join("bin.js");
+                        if candidate.exists() {
+                            return Some(candidate);
+                        }
+                    }
+                }
+            }
+            // ~/.nvm/versions/node/...
+            let nvm_dir = home_path.join(".nvm").join("versions").join("node");
+            if nvm_dir.exists() {
+                if let Ok(entries) = std::fs::read_dir(nvm_dir) {
+                    for entry in entries.flatten() {
+                        let candidate = entry.path().join("lib").join("node_modules").join("@deepseek-ai").join("dsh").join("lib").join("bin.js");
+                        if candidate.exists() {
+                            return Some(candidate);
+                        }
+                    }
+                }
+            }
+            // ~/.local/share/pnpm/global/...
+            let pnpm_dir = home_path.join(".local").join("share").join("pnpm").join("global");
+            if pnpm_dir.exists() {
+                if let Ok(entries) = std::fs::read_dir(pnpm_dir) {
+                    for entry in entries.flatten() {
+                        let candidate = entry.path().join("node_modules").join("@deepseek-ai").join("dsh").join("lib").join("bin.js");
+                        if candidate.exists() {
+                            return Some(candidate);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -326,7 +525,17 @@ pub fn perform_update_check(window: &WebviewWindow, force: bool) {
         let _ = std::fs::write(&state_file, format!(r#"{{"last_check": {}}}"#, now));
 
         // 2. Query GitHub Releases for DSH-UI Shell updates
-        let mut cmd = std::process::Command::new("node");
+        let node_bin = {
+            #[cfg(not(target_os = "windows"))]
+            { find_node_executable() }
+            #[cfg(target_os = "windows")]
+            { "node".to_string() }
+        };
+        let mut cmd = std::process::Command::new(&node_bin);
+        #[cfg(not(target_os = "windows"))]
+        {
+            cmd.env("PATH", &get_extended_path());
+        }
         cmd.args(&["-e", r#"
             const https = require('https');
             const options = {
@@ -394,7 +603,7 @@ pub fn perform_update_check(window: &WebviewWindow, force: bool) {
                                     `;
                                     banner.innerHTML = `
                                         <div style="display: flex; align-items: center; justify-content: space-between;">
-                                            <div style="font-weight: 700; font-size: 14px; color: #60a5fa; display: flex; align-items: center; gap: 6px;">
+                                             <div style="font-weight: 700; font-size: 14px; color: #60a5fa; display: flex; align-items: center; gap: 6px;">
                                                 <span>✨ 发现 DSH-UI 新版本</span>
                                                 <span style="background: rgba(77,107,254,0.3); padding: 1px 6px; border-radius: 4px; font-size: 11px;">{tag}</span>
                                             </div>
@@ -443,6 +652,7 @@ pub fn start_backend_service_if_needed(_app_handle: &AppHandle, window: WebviewW
         return;
     }
 
+    let dsh_cli = find_dsh_cli();
     let cached_script = find_cached_dsh_script();
 
     #[cfg(target_os = "windows")]
@@ -450,12 +660,15 @@ pub fn start_backend_service_if_needed(_app_handle: &AppHandle, window: WebviewW
         const CREATE_NO_WINDOW: u32 = 0x08000000;
         let mut cmd = std::process::Command::new("cmd.exe");
 
-        if let Some(ref script) = cached_script {
+        if let Some(ref dsh_path) = dsh_cli {
+            println!("[DeepSeek Harness] Fast boot from installed dsh CLI: {:?}", dsh_path);
+            cmd.args(&["/c", dsh_path.to_str().unwrap_or("dsh"), "web"]);
+        } else if let Some(ref script) = cached_script {
             println!("[DeepSeek Harness] Fast boot from cached script: {:?}", script);
             cmd.args(&["/c", "node", script.to_str().unwrap_or(""), "web"]);
         } else {
-            println!("[DeepSeek Harness] First run: downloading via npx @deepseek-ai/dsh web...");
-            cmd.args(&["/c", "npx @deepseek-ai/dsh web"]);
+            println!("[DeepSeek Harness] First run: downloading via npx @deepseek-ai/dsh web (npmmirror)...");
+            cmd.args(&["/c", &format!("npx --registry={} -y @deepseek-ai/dsh web", NPM_MIRROR_REGISTRY)]);
         }
 
         cmd.creation_flags(CREATE_NO_WINDOW);
@@ -476,10 +689,23 @@ pub fn start_backend_service_if_needed(_app_handle: &AppHandle, window: WebviewW
     #[cfg(not(target_os = "windows"))]
     {
         let mut cmd = std::process::Command::new("sh");
-        if let Some(ref script) = cached_script {
-            cmd.args(&["-c", &format!("node \"{}\" web", script.display())]);
+        let extended_path = get_extended_path();
+        cmd.env("PATH", &extended_path);
+        cmd.env("npm_config_registry", NPM_MIRROR_REGISTRY);
+
+        if let Some(ref dsh_path) = dsh_cli {
+            println!("[DeepSeek Harness] Fast boot from installed dsh CLI: {:?}", dsh_path);
+            cmd.args(&["-c", &format!("export PATH=\"{}\"; \"{}\" web", extended_path, dsh_path.display())]);
+        } else if let Some(ref script) = cached_script {
+            let node_exe = find_node_executable();
+            println!("[DeepSeek Harness] Fast boot from cached script: {:?}", script);
+            cmd.args(&["-c", &format!("export PATH=\"{}\"; \"{}\" \"{}\" web", extended_path, node_exe, script.display())]);
         } else {
-            cmd.args(&["-c", "npx @deepseek-ai/dsh web"]);
+            println!("[DeepSeek Harness] First run: downloading via npx @deepseek-ai/dsh web (npmmirror)...");
+            cmd.args(&["-c", &format!(
+                "export PATH=\"{}\"; export npm_config_registry=\"{}\"; npx --registry={} -y @deepseek-ai/dsh web",
+                extended_path, NPM_MIRROR_REGISTRY, NPM_MIRROR_REGISTRY
+            )]);
         }
 
         match cmd.spawn() {
