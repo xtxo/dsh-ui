@@ -230,6 +230,21 @@ fn window_menu(app: &AppHandle<Wry>) -> tauri::Result<Submenu<Wry>> {
 
 fn help_menu(app: &AppHandle<Wry>, title: &str) -> tauri::Result<Submenu<Wry>> {
     let help_menu = Submenu::new(app, "Help", true)?;
+    help_menu.append(&MenuItem::with_id(
+        app,
+        "dsh_website_link",
+        "DSH-UI 官网主页",
+        true,
+        None::<&str>,
+    )?)?;
+    help_menu.append(&MenuItem::with_id(
+        app,
+        "dsh_release_link",
+        "GitHub Releases 最新发布",
+        true,
+        None::<&str>,
+    )?)?;
+    help_menu.append(&PredefinedMenuItem::separator(app)?)?;
     let github_item = MenuItem::with_id(app, "pake_github_link", title, true, None::<&str>)?;
     help_menu.append(&github_item)?;
     Ok(help_menu)
@@ -281,6 +296,16 @@ pub fn handle_menu_click(app_handle: &AppHandle, id: &str) {
     match id {
         "new_window" => {
             open_additional_window_safe(app_handle);
+        }
+        "dsh_website_link" => {
+            let _ = app_handle
+                .opener()
+                .open_url("https://xtxo.github.io/dsh-ui/", None::<&str>);
+        }
+        "dsh_release_link" => {
+            let _ = app_handle
+                .opener()
+                .open_url("https://github.com/xtxo/dsh-ui/releases/latest", None::<&str>);
         }
         "pake_github_link" => {
             let _ = app_handle
