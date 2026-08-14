@@ -11,16 +11,22 @@
 <p align="center">
   <a href="https://github.com/xtxo/dsh-ui/releases"><img src="https://img.shields.io/github/v/release/xtxo/dsh-ui?style=flat-square&color=4d6bfe" alt="Release"></a>
   <img src="https://img.shields.io/badge/Size-8.7MB-brightgreen?style=flat-square" alt="Size">
-  <img src="https://img.shields.io/badge/Platforms-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square" alt="Platforms">
+  <img src="https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=flat-square" alt="Platforms">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-orange?style=flat-square" alt="License"></a>
 </p>
 
 <p align="center">
-  <a href="#-核心优势">核心优势</a> •
+  <a href="https://xtxo.github.io/dsh-ui/">🌐 在线主页</a> •
   <a href="#-快速下载">下载客户端</a> •
-  <a href="#-本地编译与打包">自主构建</a> •
-  <a href="#-技术致谢">致谢与开源</a> •
+  <a href="#-核心优势">核心优势</a> •
+  <a href="#-本地编译与打包指南">自主构建</a> •
   <a href="README_EN.md">English</a>
+</p>
+
+---
+
+<p align="center">
+  <img src="assets/preview.png" width="900" alt="DeepSeek Harness Desktop Preview" style="border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
 </p>
 
 ---
@@ -45,16 +51,14 @@
 
 ## 📥 快速下载
 
-前往 [GitHub Releases 页面](https://github.com/xtxo/dsh-ui/releases/latest) 下载已编译完成的安装包：
+前往 [GitHub Releases 页面 (v0.1.2)](https://github.com/xtxo/dsh-ui/releases/tag/v0.1.2) 或直接点击下方直链下载：
 
-| 平台 | 下载文件 | 架构说明 |
+| 平台 | 安装包直接下载 | 架构说明 |
 | :--- | :--- | :--- |
-| **Windows** | `DeepSeek-Harness-x64.exe` / `.msi` | Windows 10 / 11 (64-bit) |
-| **macOS (Apple Silicon)** | `DeepSeek-Harness-arm64.dmg` | M1 / M2 / M3 / M4 系列 Mac |
-| **macOS (Intel)** | `DeepSeek-Harness-x64.dmg` | Intel 架构 Mac |
-| **Linux** | `deepseek-harness.AppImage` / `.deb` | Ubuntu / Debian / Arch / Fedora 等 |
-
-> **提示**：首次运行时，客户端会在后台自动拉取环境组件；第二次及之后将直接秒级启动！
+| **macOS (Apple Silicon)** | 🍏 [**DeepSeek.Harness_0.1.0_aarch64.dmg**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_aarch64.dmg) | M1 / M2 / M3 / M4 系列 Mac |
+| **Windows** | 🪟 [**DeepSeek.Harness_0.1.0_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64-setup.exe) | Windows 10 / 11 64位 安装包 |
+| **Windows MSI (中文)** | 🪟 [**DeepSeek.Harness_0.1.0_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64_zh-CN.msi) | MSI 中文安装包 |
+| **Windows MSI (英文)** | 🪟 [**DeepSeek.Harness_0.1.0_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64_en-US.msi) | MSI 英文安装包 |
 
 ---
 
@@ -75,16 +79,6 @@ npm install
 
 ### 3. 一键编译
 
-#### 🪟 Windows 编译
-```powershell
-# 方式一：直接运行脚本
-.\scripts\build-windows.ps1
-
-# 方式二：使用 npm 脚本
-npm run build:windows
-```
-编译产物位于：`src-tauri/target/release/deepseek-harness.exe`
-
 #### 🍏 macOS 编译 (DMG / APP)
 ```bash
 # 方式一：直接运行构建脚本
@@ -96,6 +90,16 @@ npm run build:mac-arm64  # M1/M2/M3/M4
 npm run build:mac-x64    # Intel
 ```
 编译产物位于：`src-tauri/target/release/bundle/dmg/`
+
+#### 🪟 Windows 编译
+```powershell
+# 方式一：直接运行脚本
+.\scripts\build-windows.ps1
+
+# 方式二：使用 npm 脚本
+npm run build:windows
+```
+编译产物位于：`src-tauri/target/release/deepseek-harness.exe`
 
 #### 🐧 Linux 编译 (DEB / AppImage)
 ```bash
@@ -119,7 +123,7 @@ dsh-ui/
 │   ├── tauri.macos.conf.json # macOS 专属构建配置
 │   └── tauri.windows.conf.json # Windows 专属构建配置
 ├── dist/                   # 🎨 内置启动过渡页 (含 DeepSeek 动效)
-├── website/                # 🌐 静态展示与下载主页 (可直接部署至 GitHub Pages)
+├── website/                # 🌐 静态展示与下载主页 (https://xtxo.github.io/dsh-ui/)
 ├── scripts/                # 🛠️ 跨平台构建脚本 (Windows, macOS, Linux)
 └── .github/workflows/      # 🚀 GitHub Actions 多平台自动化发布流水线
 ```
@@ -127,8 +131,6 @@ dsh-ui/
 ---
 
 ## 🤝 致谢与开源生态
-
-本项目离不开以下开源项目的支持：
 
 - **[tw93/Pake](https://github.com/tw93/Pake)**：优秀的极简 Rust Web 桌面化引擎框架。
 - **[deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)**：DeepSeek 开源的“一切皆插件” Agent 框架。

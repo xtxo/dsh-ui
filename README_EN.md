@@ -11,16 +11,22 @@
 <p align="center">
   <a href="https://github.com/xtxo/dsh-ui/releases"><img src="https://img.shields.io/github/v/release/xtxo/dsh-ui?style=flat-square&color=4d6bfe" alt="Release"></a>
   <img src="https://img.shields.io/badge/Size-8.7MB-brightgreen?style=flat-square" alt="Size">
-  <img src="https://img.shields.io/badge/Platforms-Windows%20%7C%20macOS%20%7C%20Linux-blue?style=flat-square" alt="Platforms">
+  <img src="https://img.shields.io/badge/Platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=flat-square" alt="Platforms">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-orange?style=flat-square" alt="License"></a>
 </p>
 
 <p align="center">
-  <a href="#-highlights">Highlights</a> •
+  <a href="https://xtxo.github.io/dsh-ui/">🌐 Live Website</a> •
   <a href="#-download">Download</a> •
+  <a href="#-highlights">Highlights</a> •
   <a href="#-build-from-source">Build from Source</a> •
-  <a href="#-acknowledgments">Acknowledgments</a> •
   <a href="README.md">中文文档</a>
+</p>
+
+---
+
+<p align="center">
+  <img src="assets/preview.png" width="900" alt="DeepSeek Harness Desktop Preview" style="border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
 </p>
 
 ---
@@ -45,20 +51,18 @@
 
 ## 📥 Download
 
-Visit [GitHub Releases](https://github.com/xtxo/dsh-ui/releases/latest) to download pre-built binaries:
+Visit [GitHub Releases (v0.1.2)](https://github.com/xtxo/dsh-ui/releases/tag/v0.1.2) or click below to download directly:
 
-| Platform | Download File | Architecture |
+| Platform | Direct Download | Architecture |
 | :--- | :--- | :--- |
-| **Windows** | `DeepSeek-Harness-x64.exe` / `.msi` | Windows 10 / 11 (64-bit) |
-| **macOS (Apple Silicon)** | `DeepSeek-Harness-arm64.dmg` | M1 / M2 / M3 / M4 Macs |
-| **macOS (Intel)** | `DeepSeek-Harness-x64.dmg` | Intel-based Macs |
-| **Linux** | `deepseek-harness.AppImage` / `.deb` | Ubuntu / Debian / Arch / Fedora |
+| **macOS (Apple Silicon)** | 🍏 [**DeepSeek.Harness_0.1.0_aarch64.dmg**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_aarch64.dmg) | M1 / M2 / M3 / M4 Macs |
+| **Windows** | 🪟 [**DeepSeek.Harness_0.1.0_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64-setup.exe) | Windows 10 / 11 64-bit Installer |
+| **Windows MSI (Chinese)** | 🪟 [**DeepSeek.Harness_0.1.0_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64_zh-CN.msi) | MSI Chinese Installer |
+| **Windows MSI (English)** | 🪟 [**DeepSeek.Harness_0.1.0_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64_en-US.msi) | MSI English Installer |
 
 ---
 
 ## 🛠️ Build from Source
-
-You can easily build your own desktop client for any OS!
 
 ### 1. Prerequisites
 - [Node.js](https://nodejs.org/) (>= 18)
@@ -73,13 +77,6 @@ npm install
 
 ### 3. Build
 
-#### 🪟 Windows
-```powershell
-.\scripts\build-windows.ps1
-# or
-npm run build:windows
-```
-
 #### 🍏 macOS (DMG / APP)
 ```bash
 chmod +x ./scripts/build-macos.sh
@@ -87,6 +84,13 @@ chmod +x ./scripts/build-macos.sh
 # or
 npm run build:mac-arm64
 npm run build:mac-x64
+```
+
+#### 🪟 Windows
+```powershell
+.\scripts\build-windows.ps1
+# or
+npm run build:windows
 ```
 
 #### 🐧 Linux (DEB / AppImage)

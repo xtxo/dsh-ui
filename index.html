@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DeepSeek Harness Desktop - 一切皆插件 · 极致轻量桌面客户端</title>
-  <meta name="description" content="基于 Pake / Tauri 构建的 DeepSeek Harness 官方风格轻量桌面客户端，体积仅 8.7MB，支持 Windows / macOS / Linux。">
+  <meta name="description" content="基于 Pake / Tauri 构建的 DeepSeek Harness 官方风格极轻桌面客户端，体积仅 8.7MB，支持 macOS (Apple Silicon/Intel) 与 Windows。">
   <link rel="icon" type="image/png" href="assets/icon.png">
   <style>
     :root {
@@ -19,7 +19,7 @@
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
-      --code-bg: #0c1322;
+      --code-bg: #0d1424;
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 20px;
@@ -42,7 +42,7 @@
       position: relative;
     }
 
-    /* DeepSeek Fluid Ambient Background */
+    /* Ambient Fluid Background */
     .ambient-canvas {
       position: fixed;
       top: 0;
@@ -209,17 +209,17 @@
       grid-template-columns: 1.15fr 0.85fr;
       gap: 48px;
       align-items: center;
-      padding-top: 30px;
-      margin-bottom: 90px;
+      padding-top: 20px;
+      margin-bottom: 70px;
     }
 
     .hero-tag {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
+      font-size: 14px;
       color: var(--text-muted);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       font-weight: 500;
     }
 
@@ -228,7 +228,7 @@
       font-weight: 800;
       line-height: 1.15;
       letter-spacing: -0.03em;
-      margin-bottom: 24px;
+      margin-bottom: 22px;
       background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -238,18 +238,25 @@
       font-size: 16px;
       line-height: 1.7;
       color: var(--text-muted);
-      margin-bottom: 36px;
-      max-width: 580px;
+      margin-bottom: 34px;
+      max-width: 600px;
     }
 
-    .hero-cta {
+    .hero-cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .primary-downloads-row {
       display: flex;
       flex-wrap: wrap;
       gap: 14px;
       align-items: center;
     }
 
-    .btn-primary {
+    /* Rounded White Buttons as shown in uploaded reference */
+    .btn-download-white {
       display: inline-flex;
       align-items: center;
       gap: 10px;
@@ -258,40 +265,52 @@
       font-size: 15px;
       font-weight: 600;
       padding: 13px 26px;
-      border-radius: 30px;
+      border-radius: 14px;
       text-decoration: none;
-      box-shadow: 0 10px 25px rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
       transition: all 0.2s ease;
     }
 
-    .btn-primary:hover {
+    .btn-download-white svg {
+      flex-shrink: 0;
+    }
+
+    .btn-download-white:hover {
       transform: translateY(-2px);
-      box-shadow: 0 14px 30px rgba(255, 255, 255, 0.25);
-      background: #f1f5f9;
+      box-shadow: 0 12px 30px rgba(255, 255, 255, 0.25);
+      background: #f8fafc;
+    }
+
+    .secondary-links-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
     }
 
     .btn-secondary {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border);
-      color: var(--text);
-      font-size: 14px;
+      color: var(--text-muted);
+      font-size: 13px;
       font-weight: 500;
-      padding: 13px 22px;
-      border-radius: 30px;
+      padding: 9px 18px;
+      border-radius: 20px;
       text-decoration: none;
       backdrop-filter: blur(12px);
       transition: all 0.2s ease;
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
     }
 
-    /* Terminal Mockup Card */
+    /* Terminal Mockup Card matching screenshot */
     .terminal-card {
       background: var(--code-bg);
       border: 1px solid var(--border);
@@ -328,7 +347,7 @@
     }
 
     .term-tab.active {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1);
       color: #ffffff;
     }
 
@@ -372,12 +391,12 @@
 
     .copy-btn {
       position: absolute;
-      top: 16px;
+      top: 18px;
       right: 18px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border);
       color: var(--text-muted);
-      padding: 5px 10px;
+      padding: 6px 12px;
       border-radius: var(--radius-sm);
       font-size: 12px;
       display: flex;
@@ -388,8 +407,32 @@
     }
 
     .copy-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.14);
       color: #ffffff;
+    }
+
+    /* Showcase Preview Section */
+    .showcase-wrap {
+      margin-bottom: 90px;
+      text-align: center;
+    }
+
+    .showcase-frame {
+      position: relative;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(77, 107, 254, 0.15);
+      overflow: hidden;
+      background: #0d1117;
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    .showcase-frame img {
+      width: 100%;
+      max-width: 1100px;
+      height: auto;
+      display: block;
     }
 
     /* Section Heading */
@@ -459,7 +502,7 @@
       color: var(--text-muted);
     }
 
-    /* Downloads Cards */
+    /* Downloads Cards Grid */
     .download-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -487,7 +530,7 @@
     }
 
     .download-card.highlight::before {
-      content: 'RECOMMENDED';
+      content: 'LATEST RELEASE';
       position: absolute;
       top: 14px;
       right: -30px;
@@ -504,6 +547,9 @@
       width: 56px;
       height: 56px;
       margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .download-os-name {
@@ -677,32 +723,54 @@
     <div class="hero">
       <div class="hero-left">
         <div class="hero-tag" data-i18n="hero_tag">
-          DeepSeek Harness 桌面客户端 · 开发者预览版
+          DeepSeek Harness 开发者预览版
         </div>
         <h1 class="hero-title" data-i18n="hero_title">
-          一切皆插件 · 极致轻量
+          一切皆插件
         </h1>
         <p class="hero-desc" data-i18n="hero_desc">
-          基于 Pake / Tauri 深度打造，摆脱 Electron 臃肿包袱。体积仅 8.7MB，秒级极速唤醒，后台全自动静默拉起智能体引擎，支持 Windows 与 macOS。
+          DeepSeek Harness 开发者预览版面向全球 Harness 开发者开放测试，并同步开放源代码。<br>
+          模型、工具、技能、会话、沙箱、存储、循环、调度、UI 等所有 Agent 能力均由插件组合而成，可以自由替换和灵活重组。
         </p>
-        <div class="hero-cta">
-          <a href="#download" class="btn-primary" data-i18n="btn_download">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>下载桌面客户端</span>
-          </a>
-          <a href="https://github.com/xtxo/dsh-ui" target="_blank" class="btn-secondary" data-i18n="btn_github">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-            </svg>
-            <span>查看 GitHub 源码</span>
-          </a>
-          <a href="https://github.com/deepseek-ai/deepseek-harness" target="_blank" class="btn-secondary" data-i18n="btn_docs">
-            <span>官方架构文档</span>
-          </a>
+
+        <!-- Main Downloads Action Row with Mac & Windows Buttons -->
+        <div class="hero-cta-group">
+          <div class="primary-downloads-row">
+            <!-- Mac Download Button -->
+            <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_aarch64.dmg" class="btn-download-white" id="btn-hero-mac">
+              <svg width="20" height="20" viewBox="0 0 170 170" fill="currentColor">
+                <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-5.35.24-10.26-1.9-14.75-6.42-3.26-3.26-7.14-8.08-11.64-14.46-6.19-8.72-11.13-19.12-14.81-31.21-3.69-12.09-5.54-23.76-5.54-35.02 0-14.45 3.49-26.69 10.47-36.72 6.98-10.04 15.82-15.18 26.52-15.44 5.35 0 11.05 1.41 17.11 4.23 6.06 2.82 10.04 4.34 11.96 4.58 1.57-.24 5.76-1.83 12.56-4.76 6.8-2.93 12.69-4.24 17.68-3.94 13.06.77 23.36 5.56 30.9 14.36-11.45 6.92-17.06 16.51-16.84 28.78.23 9.77 4.01 17.9 11.34 24.41 7.33 6.51 15.93 10.15 25.8 10.92-2.14 6.74-4.79 13.3-7.94 19.67zM119.22 31.84c0-7.29 2.62-14.07 7.86-20.35 5.24-6.28 11.69-10.11 19.35-11.49.23 1.13.34 2.27.34 3.42 0 7.42-2.73 14.37-8.19 20.85-5.46 6.48-12.07 10.28-19.83 11.4-.23-1.25-.34-2.43-.34-3.53z"/>
+              </svg>
+              <span data-i18n="btn_dl_mac_hero">Download for Mac</span>
+            </a>
+
+            <!-- Windows Download Button -->
+            <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64-setup.exe" class="btn-download-white" id="btn-hero-win">
+              <svg width="18" height="18" viewBox="0 0 88 88" fill="currentColor">
+                <path d="M0 12.402l35.687-4.86.016 34.423-35.67.243L0 12.402zm35.67 33.528l.028 34.453L.028 75.48.001 46.162l35.697-.232zm4.313-39.023L87.954 0v41.527l-47.971.375V6.907zm47.971 38.895v42.198l-47.971-6.755V46.064l47.971-.262z"/>
+              </svg>
+              <span data-i18n="btn_dl_win_hero">Download for Windows</span>
+            </a>
+          </div>
+
+          <div class="secondary-links-row">
+            <a href="https://github.com/xtxo/dsh-ui" target="_blank" class="btn-secondary" data-i18n="btn_github">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+              <span>查看 GitHub</span>
+            </a>
+            <a href="https://github.com/deepseek-ai/deepseek-harness" target="_blank" class="btn-secondary" data-i18n="btn_docs">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              <span>开发者文档</span>
+            </a>
+            <a href="#download" class="btn-secondary" data-i18n="btn_all_versions">
+              <span>全部版本与安装包</span>
+            </a>
+          </div>
         </div>
       </div>
 
@@ -741,10 +809,17 @@
       </div>
     </div>
 
+    <!-- App Screenshot Showcase -->
+    <div class="showcase-wrap">
+      <div class="showcase-frame">
+        <img src="assets/preview.png" alt="DeepSeek Harness Desktop App Interface" />
+      </div>
+    </div>
+
     <!-- Feature Section -->
     <div class="section-title-wrap">
-      <h2 class="section-title" data-i18n="feat_sec_title">为什么选择 DSH-UI 桌面版</h2>
-      <p class="section-subtitle" data-i18n="feat_sec_desc">基于现代化 Rust + 原生 Web 容器打造的高性能客户端</p>
+      <h2 class="section-title" data-i18n="feat_sec_title">为什么选择 DSH-UI 桌面客户端</h2>
+      <p class="section-subtitle" data-i18n="feat_sec_desc">基于现代 Rust + 原生 Web 容器的高性能轻量桌面解决方案</p>
     </div>
 
     <div class="features-grid">
@@ -777,17 +852,32 @@
           </svg>
         </div>
         <h3 class="feature-title" data-i18n="f3_title">全平台原生支持</h3>
-        <p class="feature-desc" data-i18n="f3_desc">支持 Windows 10/11、macOS (Apple Silicon & Intel) 以及主流 Linux 发行版，提供原生应用与托盘交互体验。</p>
+        <p class="feature-desc" data-i18n="f3_desc">支持 macOS (Apple Silicon & Intel)、Windows 10/11 以及主流 Linux，提供原生应用、托盘与拖拽交互体验。</p>
       </div>
     </div>
 
     <!-- Download Section -->
     <div id="download" class="section-title-wrap">
-      <h2 class="section-title" data-i18n="dl_sec_title">立即下载客户端</h2>
-      <p class="section-subtitle" data-i18n="dl_sec_desc">选择适用于你操作系统的安装包或可执行文件</p>
+      <h2 class="section-title" data-i18n="dl_sec_title">全部安装包下载</h2>
+      <p class="section-subtitle" data-i18n="dl_sec_desc">选择适用于你操作系统的安装包或可执行文件 (v0.1.2)</p>
     </div>
 
     <div class="download-grid">
+      <!-- macOS -->
+      <div class="download-card highlight">
+        <div class="os-icon">
+          <svg viewBox="0 0 170 170" width="56" height="56" fill="#ffffff">
+            <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-5.35.24-10.26-1.9-14.75-6.42-3.26-3.26-7.14-8.08-11.64-14.46-6.19-8.72-11.13-19.12-14.81-31.21-3.69-12.09-5.54-23.76-5.54-35.02 0-14.45 3.49-26.69 10.47-36.72 6.98-10.04 15.82-15.18 26.52-15.44 5.35 0 11.05 1.41 17.11 4.23 6.06 2.82 10.04 4.34 11.96 4.58 1.57-.24 5.76-1.83 12.56-4.76 6.8-2.93 12.69-4.24 17.68-3.94 13.06.77 23.36 5.56 30.9 14.36-11.45 6.92-17.06 16.51-16.84 28.78.23 9.77 4.01 17.9 11.34 24.41 7.33 6.51 15.93 10.15 25.8 10.92-2.14 6.74-4.79 13.3-7.94 19.67zM119.22 31.84c0-7.29 2.62-14.07 7.86-20.35 5.24-6.28 11.69-10.11 19.35-11.49.23 1.13.34 2.27.34 3.42 0 7.42-2.73 14.37-8.19 20.85-5.46 6.48-12.07 10.28-19.83 11.4-.23-1.25-.34-2.43-.34-3.53z"/>
+          </svg>
+        </div>
+        <div class="download-os-name">macOS</div>
+        <div class="download-os-desc">Apple Silicon (M1~M4) / Intel</div>
+        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_aarch64.dmg" class="dl-btn" data-i18n="btn_dl_mac">
+          下载 Apple Silicon (.dmg)
+        </a>
+        <a href="https://github.com/xtxo/dsh-ui/releases/tag/v0.1.2" class="sub-link" data-i18n="btn_dl_mac_intel">下载 Intel 架构 (.dmg)</a>
+      </div>
+
       <!-- Windows -->
       <div class="download-card highlight">
         <div class="os-icon">
@@ -797,25 +887,10 @@
         </div>
         <div class="download-os-name">Windows</div>
         <div class="download-os-desc">Windows 10 / 11 (64-bit)</div>
-        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="dl-btn" data-i18n="btn_dl_win">
-          下载 Windows (.exe)
+        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64-setup.exe" class="dl-btn" data-i18n="btn_dl_win">
+          下载 Windows (.exe 安装包)
         </a>
-        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="sub-link" data-i18n="btn_dl_win_msi">下载 .msi 安装包</a>
-      </div>
-
-      <!-- macOS -->
-      <div class="download-card">
-        <div class="os-icon">
-          <svg viewBox="0 0 170 170" width="56" height="56" fill="#ffffff">
-            <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-5.35.24-10.26-1.9-14.75-6.42-3.26-3.26-7.14-8.08-11.64-14.46-6.19-8.72-11.13-19.12-14.81-31.21-3.69-12.09-5.54-23.76-5.54-35.02 0-14.45 3.49-26.69 10.47-36.72 6.98-10.04 15.82-15.18 26.52-15.44 5.35 0 11.05 1.41 17.11 4.23 6.06 2.82 10.04 4.34 11.96 4.58 1.57-.24 5.76-1.83 12.56-4.76 6.8-2.93 12.69-4.24 17.68-3.94 13.06.77 23.36 5.56 30.9 14.36-11.45 6.92-17.06 16.51-16.84 28.78.23 9.77 4.01 17.9 11.34 24.41 7.33 6.51 15.93 10.15 25.8 10.92-2.14 6.74-4.79 13.3-7.94 19.67zM119.22 31.84c0-7.29 2.62-14.07 7.86-20.35 5.24-6.28 11.69-10.11 19.35-11.49.23 1.13.34 2.27.34 3.42 0 7.42-2.73 14.37-8.19 20.85-5.46 6.48-12.07 10.28-19.83 11.4-.23-1.25-.34-2.43-.34-3.53z"/>
-          </svg>
-        </div>
-        <div class="download-os-name">macOS</div>
-        <div class="download-os-desc">Apple Silicon (M1~M4) / Intel</div>
-        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="dl-btn" data-i18n="btn_dl_mac">
-          下载 Apple Silicon (.dmg)
-        </a>
-        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="sub-link" data-i18n="btn_dl_mac_intel">下载 Intel 架构 (.dmg)</a>
+        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64_zh-CN.msi" class="sub-link" data-i18n="btn_dl_win_msi">下载 .msi 安装包</a>
       </div>
 
       <!-- Linux -->
@@ -825,12 +900,12 @@
             <path d="M400.1 270.6c-4.7-22.9-16.1-43.2-32.8-58.7-2.6-2.4-5.3-4.6-8.2-6.6 6.3-17.7 7.7-36.9 3.8-55.7-8.6-41.4-40.4-74-81.8-83.9-30.8-7.4-62.7-1.3-88.7 16.9-26 18.2-42.5 46.8-45.8 79.5-1.5 15 .2 30.1 5 44.4-19.1 16.7-31.8 39.8-35.8 65.5-5.5 35 4.6 70.3 27.6 96.6 23 26.3 56.4 41.5 91.4 41.5h103.4c29.5 0 57.6-11.7 78.4-32.5 20.9-20.8 32.5-49 32.5-78.5 0-10-1.7-19.9-5-28.5z"/>
           </svg>
         </div>
-        <div class="download-os-name">Linux</div>
+        <div class="download-os-name">Linux &amp; 更多</div>
         <div class="download-os-desc">Ubuntu / Debian / Arch / Fedora</div>
         <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="dl-btn" data-i18n="btn_dl_linux">
-          下载 Linux (.AppImage / .deb)
+          查看 GitHub Releases
         </a>
-        <a href="https://github.com/xtxo/dsh-ui/releases/latest" class="sub-link" data-i18n="btn_dl_linux_deb">查看 Linux 软件包</a>
+        <a href="https://github.com/xtxo/dsh-ui#%EF%B8%8F-%E6%9C%AC%E5%9C%B0%E7%BC%96%E8%AF%91%E4%B8%8E%E6%89%93%E5%8C%85%E6%8C%87%E5%8D%97" class="sub-link" data-i18n="btn_dl_linux_deb">源码自主构建</a>
       </div>
     </div>
 
@@ -884,31 +959,33 @@
   <script>
     const i18n = {
       zh: {
-        hero_tag: "DeepSeek Harness 桌面客户端 · 开发者预览版",
-        hero_title: "一切皆插件 · 极致轻量",
-        hero_desc: "基于 Pake / Tauri 深度打造，摆脱 Electron 臃肿包袱。体积仅 8.7MB，秒级极速唤醒，后台全自动静默拉起智能体引擎，支持 Windows 与 macOS。",
-        btn_download: "下载桌面客户端",
-        btn_github: "查看 GitHub 源码",
-        btn_docs: "官方架构文档",
+        hero_tag: "DeepSeek Harness 开发者预览版",
+        hero_title: "一切皆插件",
+        hero_desc: "DeepSeek Harness 开发者预览版面向全球 Harness 开发者开放测试，并同步开放源代码。<br>模型、工具、技能、会话、沙箱、存储、循环、调度、UI 等所有 Agent 能力均由插件组合而成，可以自由替换和灵活重组。",
+        btn_dl_mac_hero: "Download for Mac",
+        btn_dl_win_hero: "Download for Windows",
+        btn_github: "查看 GitHub",
+        btn_docs: "开发者文档",
+        btn_all_versions: "全部版本",
         tab_quick: "一键使用",
         tab_build: "源码构建",
         btn_copy: "复制",
-        feat_sec_title: "为什么选择 DSH-UI 桌面版",
-        feat_sec_desc: "基于现代化 Rust + 原生 Web 容器打造的高性能客户端",
+        feat_sec_title: "为什么选择 DSH-UI 桌面客户端",
+        feat_sec_desc: "基于现代 Rust + 原生 Web 容器的高性能轻量桌面解决方案",
         f1_title: "极致小巧 · 8.7MB",
         f1_desc: "相较于传统 Electron 动辄 150MB+ 的臃肿体积，基于 Pake 架构的二进制仅 8.7MB，内存开销减少 80% 以上。",
         f2_title: "智能后台管理 · 双击即用",
         f2_desc: "内置 Rust 原生生命周期管理引擎，无需手动敲命令行。双击自动静默拉起后端并智能握手，退出自动释放。",
         f3_title: "全平台原生支持",
-        f3_desc: "支持 Windows 10/11、macOS (Apple Silicon & Intel) 以及主流 Linux 发行版，提供原生应用与托盘交互体验。",
-        dl_sec_title: "立即下载客户端",
-        dl_sec_desc: "选择适用于你操作系统的安装包或可执行文件",
-        btn_dl_win: "下载 Windows (.exe)",
-        btn_dl_win_msi: "下载 .msi 安装包",
+        f3_desc: "支持 macOS (Apple Silicon & Intel)、Windows 10/11 以及主流 Linux，提供原生应用、托盘与拖拽交互体验。",
+        dl_sec_title: "全部安装包下载",
+        dl_sec_desc: "选择适用于你操作系统的安装包或可执行文件 (v0.1.2)",
         btn_dl_mac: "下载 Apple Silicon (.dmg)",
         btn_dl_mac_intel: "下载 Intel 架构 (.dmg)",
-        btn_dl_linux: "下载 Linux (.AppImage / .deb)",
-        btn_dl_linux_deb: "查看 Linux 软件包",
+        btn_dl_win: "下载 Windows (.exe 安装包)",
+        btn_dl_win_msi: "下载 .msi 安装包",
+        btn_dl_linux: "查看 GitHub Releases",
+        btn_dl_linux_deb: "源码自主构建",
         comp_title: "技术架构对比：Pake (DSH-UI) vs Electron",
         th_feature: "对比特性",
         td_size: "安装包体积",
@@ -918,31 +995,33 @@
         footer_text: "基于 <a href='https://github.com/tw93/Pake' target='_blank'>tw93/Pake</a> 与 <a href='https://github.com/deepseek-ai/deepseek-harness' target='_blank'>deepseek-ai/deepseek-harness</a> 开源生态构建。"
       },
       en: {
-        hero_tag: "DeepSeek Harness Desktop Client · Developer Preview",
-        hero_title: "Everything is a Plugin · Pure & Lightweight",
-        hero_desc: "Built with Pake & Tauri, free of Electron bloat. Only ~8.7MB binary size, sub-second cold starts, automatic background agent engine management, native for Windows, macOS & Linux.",
-        btn_download: "Download Desktop App",
-        btn_github: "View GitHub Repo",
-        btn_docs: "Architecture Docs",
+        hero_tag: "DeepSeek Harness Developer Preview",
+        hero_title: "Everything is a Plugin",
+        hero_desc: "DeepSeek Harness Developer Preview is open for worldwide Harness developers and open-sourced simultaneously.<br>Models, tools, skills, conversations, sandbox, memory, loops, orchestration, and UI are fully composable plugins.",
+        btn_dl_mac_hero: "Download for Mac",
+        btn_dl_win_hero: "Download for Windows",
+        btn_github: "View GitHub",
+        btn_docs: "Developer Docs",
+        btn_all_versions: "All Versions",
         tab_quick: "Quick Start",
         tab_build: "Build from Source",
         btn_copy: "Copy",
         feat_sec_title: "Why Choose DSH-UI Desktop",
-        feat_sec_desc: "High performance agent client built with modern Rust + native webview",
+        feat_sec_desc: "Ultra-lightweight desktop solution built with Rust + native Webview container",
         f1_title: "Ultra-Lightweight · 8.7MB",
-        f1_desc: "Unlike bulky Electron apps that exceed 150MB+, the Pake-based executable is only 8.7MB with over 80% less memory usage.",
-        f2_title: "Auto Service Lifecycle",
-        f2_desc: "Embedded Rust process manager. Double-click to auto-launch background agent engine silently without touching CLI. Clean shutdown on exit.",
+        f1_desc: "Unlike bulky Electron apps exceeding 150MB+, the Pake-based executable is only 8.7MB with over 80% less memory usage.",
+        f2_title: "Auto Background Engine",
+        f2_desc: "Embedded Rust process lifecycle manager. Double-click to auto-launch background agent engine silently without touching CLI.",
         f3_title: "Multi-Platform Native",
-        f3_desc: "First-class support for Windows 10/11, macOS (Apple Silicon & Intel), and Linux with system tray and drag-drop support.",
-        dl_sec_title: "Download DSH-UI Desktop",
-        dl_sec_desc: "Select the installer or binary matching your operating system",
-        btn_dl_win: "Download Windows (.exe)",
-        btn_dl_win_msi: "Download .msi Installer",
+        f3_desc: "Native support for macOS (Apple Silicon & Intel), Windows 10/11, and Linux with system tray and drag-drop support.",
+        dl_sec_title: "Download Releases",
+        dl_sec_desc: "Select the installer matching your operating system (v0.1.2)",
         btn_dl_mac: "Download Apple Silicon (.dmg)",
         btn_dl_mac_intel: "Download Intel Mac (.dmg)",
-        btn_dl_linux: "Download Linux (.AppImage / .deb)",
-        btn_dl_linux_deb: "View Linux Packages",
+        btn_dl_win: "Download Windows (.exe Setup)",
+        btn_dl_win_msi: "Download .msi Installer",
+        btn_dl_linux: "View GitHub Releases",
+        btn_dl_linux_deb: "Build from Source",
         comp_title: "Architecture Comparison: Pake (DSH-UI) vs Electron",
         th_feature: "Metrics",
         td_size: "App Binary Size",
@@ -963,10 +1042,10 @@
         const key = el.getAttribute('data-i18n');
         if (i18n[lang][key]) {
           if (el.tagName === 'A' || el.tagName === 'SPAN' || el.tagName === 'BUTTON' || el.tagName === 'DIV' || el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'H3' || el.tagName === 'P' || el.tagName === 'TH' || el.tagName === 'TD') {
-            if (key === 'btn_download' || key === 'btn_github') {
-              el.querySelector('span').innerText = i18n[lang][key];
-            } else if (key === 'footer_text') {
+            if (key === 'footer_text' || key === 'hero_desc') {
               el.innerHTML = i18n[lang][key];
+            } else if (el.querySelector('span')) {
+              el.querySelector('span').innerText = i18n[lang][key];
             } else {
               el.innerText = i18n[lang][key];
             }
