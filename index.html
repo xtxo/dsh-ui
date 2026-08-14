@@ -577,8 +577,85 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 36px;
-      margin-bottom: 90px;
+      margin-bottom: 70px;
       backdrop-filter: blur(16px);
+    }
+
+    /* FAQ Section */
+    .faq-container {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 90px;
+    }
+
+    .faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+      backdrop-filter: blur(16px);
+      transition: all 0.25s ease;
+    }
+
+    .faq-item:hover {
+      border-color: rgba(77, 107, 254, 0.4);
+      background: rgba(30, 41, 59, 0.6);
+    }
+
+    .faq-q {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .faq-badge {
+      background: rgba(77, 107, 254, 0.2);
+      border: 1px solid rgba(77, 107, 254, 0.4);
+      color: #60a5fa;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .faq-badge-mac {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #f1f5f9;
+    }
+
+    .faq-badge-win {
+      background: rgba(0, 173, 239, 0.15);
+      border-color: rgba(0, 173, 239, 0.4);
+      color: #38bdf8;
+    }
+
+    .faq-a {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    .faq-a strong {
+      color: #f1f5f9;
+    }
+
+    .faq-a code {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #38bdf8;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      display: inline-block;
+      margin-top: 4px;
     }
 
     table {
@@ -897,6 +974,54 @@
         </tbody>
       </table>
     </div>
+
+    <!-- FAQ Section -->
+    <div id="faq" class="section-title-wrap">
+      <h2 class="section-title" data-i18n="faq_sec_title">常见问题与官方声明</h2>
+      <p class="section-subtitle" data-i18n="faq_sec_desc">解答关于开源性、安全性与各操作系统运行的疑问</p>
+    </div>
+
+    <div class="faq-container">
+      <!-- FAQ 1: Official Statement -->
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="faq-badge">官方声明</span>
+          <span data-i18n="faq_q1">这是 DeepSeek 官方出品的桌面客户端吗？</span>
+        </div>
+        <div class="faq-a" data-i18n="faq_a1">
+          <strong>本项目是对 DeepSeek Harness 官方生态的轻量桌面打包与原生交互封装。</strong><br>
+          • <strong>官方纯正内核</strong>：客户端后台拉起和运行的智能体服务、插件系统与模型调度代码 <strong>100% 来源于 DeepSeek 官方仓库源码与官方 npm 引擎 (<code>@deepseek-ai/dsh</code>)</strong>。<br>
+          • <strong>完全开源透明</strong>：本项目代码全部开源在 GitHub，不包含任何中间商服务，不收集用户任何私有数据或 API Key，所有配置与对话均仅保存在您本地电脑中。
+        </div>
+      </div>
+
+      <!-- FAQ 2: macOS Gatekeeper -->
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="faq-badge faq-badge-mac">macOS 疑难解答</span>
+          <span data-i18n="faq_q2">Mac 提示「Apple 无法验证是否包含恶意软件 / 已损坏」如何解决？</span>
+        </div>
+        <div class="faq-a" data-i18n="faq_a2">
+          这是因为开源项目未购买苹果官方开发者商业签名证书，macOS Gatekeeper（看门门禁）会默认拦截。解决方法非常简单（任选一种即可）：<br>
+          • <strong>方法一（推荐，3秒搞定）</strong>：打开「访达」➔ 进入「应用程序」文件夹 ➔ <strong>按住 Control 键并右键点击 <code>DeepSeek Harness.app</code></strong> ➔ 在弹出菜单中点击 <strong>「打开」</strong> ➔ 弹窗中选择 <strong>「仍要打开」</strong> 即可（仅需首次操作一次）。<br>
+          • <strong>方法二（系统设置）</strong>：打开 Mac <strong>「系统设置」</strong> ➔ <strong>「隐私与安全性」</strong> ➔ 找到「安全性」栏目 ➔ 点击 <strong>「仍要打开」</strong>。<br>
+          • <strong>方法三（终端一条命令彻底放行）</strong>：打开 Mac「终端」执行命令：<br>
+          <code>xattr -cr "/Applications/DeepSeek Harness.app"</code>
+        </div>
+      </div>
+
+      <!-- FAQ 3: Windows SmartScreen -->
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="faq-badge faq-badge-win">Windows 疑难解答</span>
+          <span data-i18n="faq_q3">Windows 提示「Windows 已保护你的电脑 / SmartScreen」如何运行？</span>
+        </div>
+        <div class="faq-a" data-i18n="faq_a3">
+          同样是由于个人开源软件未附带商业证书，属于微软 SmartScreen 针对新发布软件的通用防护提示。<br>
+          点击弹窗上的 <strong>「更多信息 (More info)」</strong> ➔ 选择 <strong>「仍要运行 (Run anyway)」</strong> 即可正常启动。
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Footer -->
@@ -943,6 +1068,14 @@
         td_mem: "运行内存占用",
         td_speed: "启动响应速度",
         td_backend: "智能体服务集成",
+        faq_sec_title: "常见问题与官方声明",
+        faq_sec_desc: "解答关于开源性、安全性与各操作系统运行的疑问",
+        faq_q1: "这是 DeepSeek 官方出品的桌面客户端吗？",
+        faq_a1: "<strong>本项目是对 DeepSeek Harness 官方生态的轻量桌面打包与原生交互封装。</strong><br>• <strong>官方纯正内核</strong>：客户端后台拉起和运行的智能体服务、插件系统与模型调度代码 <strong>100% 来源于 DeepSeek 官方仓库源码与官方 npm 引擎 (<code>@deepseek-ai/dsh</code>)</strong>。<br>• <strong>完全开源透明</strong>：本项目代码全部开源在 GitHub，不包含任何中间商服务，不收集用户任何私有数据或 API Key，所有配置与对话均仅保存在您本地电脑中。",
+        faq_q2: "Mac 提示「Apple 无法验证是否包含恶意软件 / 已损坏」如何解决？",
+        faq_a2: "这是因为开源项目未购买苹果官方开发者商业签名证书，macOS Gatekeeper（看门门禁）会默认拦截。解决方法非常简单（任选一种即可）：<br>• <strong>方法一（推荐，3秒搞定）</strong>：打开「访达」➔ 进入「应用程序」文件夹 ➔ <strong>按住 Control 键并右键点击 <code>DeepSeek Harness.app</code></strong> ➔ 在弹出菜单中点击 <strong>「打开」</strong> ➔ 弹窗中选择 <strong>「仍要打开」</strong> 即可（仅需首次操作一次）。<br>• <strong>方法二（系统设置）</strong>：打开 Mac <strong>「系统设置」</strong> ➔ <strong>「隐私与安全性」</strong> ➔ 找到「安全性」栏目 ➔ 点击 <strong>「仍要打开」</strong>。<br>• <strong>方法三（终端一条命令彻底放行）</strong>：打开 Mac「终端」执行命令：<br><code>xattr -cr \"/Applications/DeepSeek Harness.app\"</code>",
+        faq_q3: "Windows 提示「Windows 已保护你的电脑 / SmartScreen」如何运行？",
+        faq_a3: "同样是由于个人开源软件未附带商业证书，属于微软 SmartScreen 针对新发布软件的通用防护提示。<br>点击弹窗上的 <strong>「更多信息 (More info)」</strong> ➔ 选择 <strong>「仍要运行 (Run anyway)」</strong> 即可正常启动。",
         footer_text: "基于 <a href='https://github.com/tw93/Pake' target='_blank'>tw93/Pake</a> 与 <a href='https://github.com/deepseek-ai/deepseek-harness' target='_blank'>deepseek-ai/deepseek-harness</a> 开源生态构建。"
       },
       en: {
