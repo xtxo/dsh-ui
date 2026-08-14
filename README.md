@@ -51,13 +51,13 @@
 
 ## 📥 快速下载
 
-前往 [GitHub Releases 页面 (v0.1.2)](https://github.com/xtxo/dsh-ui/releases/tag/v0.1.2) 或直接点击下方直链下载：
+前往 [GitHub Releases 页面 (v0.1.3)](https://github.com/xtxo/dsh-ui/releases/tag/v0.1.3) 或直接点击下方直链下载：
 
 | 平台 | 安装包直接下载 | 架构说明 |
 | :--- | :--- | :--- |
-| **macOS (Apple Silicon)** | 🍏 [**DeepSeek.Harness_0.1.0_aarch64.dmg**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_aarch64.dmg) | M1 / M2 / M3 / M4 系列 Mac |
-| **Windows** | 🪟 [**DeepSeek.Harness_0.1.0_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64-setup.exe) | Windows 10 / 11 64位 安装包 |
-| **Windows MSI (中文)** | 🪟 [**DeepSeek.Harness_0.1.0_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64_zh-CN.msi) | MSI 中文安装包 |
+| **macOS (Apple Silicon)** | 🍏 [**DeepSeek.Harness_0.1.0_aarch64.dmg**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.3/DeepSeek.Harness_0.1.0_aarch64.dmg) | M1 / M2 / M3 / M4 系列 Mac |
+| **Windows** | 🪟 [**DeepSeek.Harness_0.1.0_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.3/DeepSeek.Harness_0.1.0_x64-setup.exe) | Windows 10 / 11 64位 安装包 |
+| **Windows MSI (中文)** | 🪟 [**DeepSeek.Harness_0.1.0_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.3/DeepSeek.Harness_0.1.0_x64_zh-CN.msi) | MSI 中文安装包 |
 | **Windows MSI (英文)** | 🪟 [**DeepSeek.Harness_0.1.0_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.2/DeepSeek.Harness_0.1.0_x64_en-US.msi) | MSI 英文安装包 |
 
 ---
