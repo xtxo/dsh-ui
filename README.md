@@ -1,7 +1,7 @@
 # DSH-UI: DeepSeek Harness 官方风格极轻桌面客户端
 
 <p align="center">
-  <img src="assets/icon.png" width="128" height="128" alt="DeepSeek Harness Desktop Icon" />
+  <img src="assets/icon-master.svg" width="128" height="128" alt="DeepSeek Harness Desktop Icon" />
 </p>
 
 <p align="center">
