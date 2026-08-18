@@ -37,7 +37,7 @@
     "linux": true,
     "windows": true
   },
-  "system_tray_path": "png/deepseek_harness_512.png",
+  "system_tray_path": "icons/icon.png",
   "inject": [],
   "proxy_url": "",
   "multi_instance": false,
