@@ -1,0 +1,38 @@
+name: Regenerate approved whale icons
+
+on:
+  push:
+    branches:
+      - agent/redesign-app-icon
+    paths:
+      - assets/icon-master.jpg
+      - scripts/generate-icons.py
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check pillow
+      - name: Generate icon assets
+        run: python scripts/generate-icons.py
+      - name: Commit generated icons
+        run: |
+          if git diff --quiet; then
+            echo "No generated icon changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets src-tauri/icons src-tauri/png
+          git commit -m "apply approved whale app icon"
+          git push
