@@ -8,6 +8,7 @@ from PIL import Image, ImageDraw, ImageFilter
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "assets" / "icon-master.jpg"
 
+# Keep this generator deterministic so every platform uses the same approved whale artwork.
 
 def master_icon() -> Image.Image:
     src = Image.open(SOURCE).convert("RGB")
