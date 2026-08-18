@@ -17,6 +17,25 @@ const pkg = JSON.parse(read('package.json'));
 const version = pkg.version;
 const tag = `v${version}`;
 
+// Keep every public release reference derived from package.json.
+// This covers README download tables and both GitHub Pages entry points.
+const syncReleaseReferences = (text) => text
+  .replace(
+    /https:\/\/github\.com\/xtxo\/dsh-ui\/releases\/tag\/v\d+\.\d+\.\d+/g,
+    `https://github.com/xtxo/dsh-ui/releases/tag/${tag}`,
+  )
+  .replace(
+    /https:\/\/github\.com\/xtxo\/dsh-ui\/releases\/download\/v\d+\.\d+\.\d+\//g,
+    `https://github.com/xtxo/dsh-ui/releases/download/${tag}/`,
+  )
+  .replace(/DeepSeek\.Harness_\d+\.\d+\.\d+/g, `DeepSeek.Harness_${version}`)
+  .replace(/\(v\d+\.\d+\.\d+\)/g, `(${tag})`)
+  .replace(/(latest-ver-badge">)v\d+\.\d+\.\d+(<)/g, `$1${tag}$2`);
+
+for (const rel of ['README.md', 'README_EN.md', 'index.html', 'website/index.html']) {
+  writeIfChanged(rel, syncReleaseReferences(read(rel)));
+}
+
 // Tauri app version.
 const tauri = JSON.parse(read('src-tauri/tauri.conf.json'));
 tauri.version = version;
@@ -47,3 +66,5 @@ const lock = JSON.parse(read('package-lock.json'));
 lock.version = version;
 if (lock.packages?.['']) lock.packages[''].version = version;
 writeIfChanged('package-lock.json', `${JSON.stringify(lock, null, 2)}\n`);
+
+console.log(`release metadata synchronized to ${tag}`);
