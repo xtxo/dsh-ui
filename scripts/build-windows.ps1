@@ -14,10 +14,13 @@ Set-Location $RootDir
 
 $env:PATH = "C:\Users\zhangpc\.cargo\bin;" + ($env:PATH -replace '"', '')
 
-Write-Host "[1/2] Installing dependencies..." -ForegroundColor Yellow
+Write-Host "[1/3] Installing dependencies..." -ForegroundColor Yellow
 npm install
 
-Write-Host "[2/2] Compiling Windows release binary via Cargo & Tauri..." -ForegroundColor Yellow
+Write-Host "[2/3] Generating app icons from approved whale artwork..." -ForegroundColor Yellow
+npx tauri icon assets/icon-master.svg
+
+Write-Host "[3/3] Compiling Windows release binary via Cargo & Tauri..." -ForegroundColor Yellow
 cargo build --release --manifest-path "$RootDir\src-tauri\Cargo.toml"
 
 $targetExe = "$RootDir\src-tauri\target\release\deepseek-harness.exe"

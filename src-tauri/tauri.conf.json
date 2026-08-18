@@ -5,7 +5,7 @@
   "app": {
     "withGlobalTauri": true,
     "trayIcon": {
-      "iconPath": "png/deepseek_harness_512.png",
+      "iconPath": "icons/icon.png",
       "iconAsTemplate": false,
       "id": "pake-tray"
     },

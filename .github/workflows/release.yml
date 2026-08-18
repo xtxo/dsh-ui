@@ -53,6 +53,9 @@ jobs:
       - name: Install Node dependencies
         run: npm ci || npm install
 
+      - name: Generate approved whale app icons
+        run: npx tauri icon assets/icon-master.svg
+
       - name: Build Tauri Desktop Application
         uses: tauri-apps/tauri-action@v0
         env:

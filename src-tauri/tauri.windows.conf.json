@@ -1,8 +1,8 @@
 {
   "bundle": {
-    "icon": ["png/deepseek_harness_256.ico", "png/deepseek_harness_32.ico"],
+    "icon": ["icons/icon.ico"],
     "active": true,
-    "resources": ["png/deepseek_harness_32.ico"],
+    "resources": ["icons/icon.ico"],
     "targets": ["nsis", "msi"],
     "windows": {
       "digestAlgorithm": "sha256",
