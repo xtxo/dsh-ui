@@ -11,14 +11,15 @@
   },
   "scripts": {
     "tauri": "tauri",
-    "dev": "tauri dev",
-    "build": "tauri build",
-    "build:debug": "tauri build --debug",
-    "build:mac": "tauri build --target universal-apple-darwin",
-    "build:mac-arm64": "tauri build --target aarch64-apple-darwin",
-    "build:mac-x64": "tauri build --target x86_64-apple-darwin",
-    "build:windows": "tauri build --target x86_64-pc-windows-msvc",
-    "build:linux": "tauri build"
+    "icons": "tauri icon assets/icon-master.svg",
+    "dev": "npm run icons && tauri dev",
+    "build": "npm run icons && tauri build",
+    "build:debug": "npm run icons && tauri build --debug",
+    "build:mac": "npm run icons && tauri build --target universal-apple-darwin",
+    "build:mac-arm64": "npm run icons && tauri build --target aarch64-apple-darwin",
+    "build:mac-x64": "npm run icons && tauri build --target x86_64-apple-darwin",
+    "build:windows": "npm run icons && tauri build --target x86_64-pc-windows-msvc",
+    "build:linux": "npm run icons && tauri build"
   },
   "dependencies": {
     "@tauri-apps/api": "~2.10.1",
