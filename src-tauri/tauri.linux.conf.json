@@ -1,6 +1,6 @@
 {
   "bundle": {
-    "icon": ["png/deepseek_harness_512.png"],
+    "icon": ["icons/icon.png"],
     "active": true,
     "linux": {
       "deb": {
