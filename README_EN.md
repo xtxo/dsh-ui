@@ -1,7 +1,7 @@
 # DSH-UI: DeepSeek Harness Lightweight Desktop Client
 
 <p align="center">
-  <img src="assets/icon.png" width="128" height="128" alt="DeepSeek Harness Desktop Icon" />
+  <img src="assets/icon-master.svg" width="128" height="128" alt="DeepSeek Harness Desktop Icon" />
 </p>
 
 <p align="center">
