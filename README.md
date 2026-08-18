@@ -56,9 +56,10 @@
 | 平台 | 安装包直接下载 | 架构说明 |
 | :--- | :--- | :--- |
 | **macOS (Apple Silicon)** | 🍏 [**DeepSeek.Harness_0.1.9_aarch64.dmg**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_aarch64.dmg) | M1 / M2 / M3 / M4 系列 Mac |
-| **Windows** | 🪟 [**DeepSeek.Harness_0.1.9_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64-setup.exe) | Windows 10 / 11 64位 安装包 |
-| **Windows MSI (中文)** | 🪟 [**DeepSeek.Harness_0.1.9_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64_zh-CN.msi) | MSI 中文安装包 |
-| **Windows MSI (英文)** | 🪟 [**DeepSeek.Harness_0.1.9_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64_en-US.msi) | MSI 英文安装包 |
+| **Windows 绿色免安装版（推荐）** | 🟢 [**DeepSeek-Harness-Portable.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek-Harness-Portable.exe) | 无需安装，下载后直接运行 |
+| **Windows Setup 安装版** | 🪟 [**DeepSeek.Harness_0.1.9_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64-setup.exe) | Windows 10 / 11 64位，适合普通用户安装 |
+| **Windows MSI (中文)** | 🪟 [**DeepSeek.Harness_0.1.9_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64_zh-CN.msi) | WiX MSI 中文安装包，适合企业/静默部署 |
+| **Windows MSI (英文)** | 🪟 [**DeepSeek.Harness_0.1.9_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64_en-US.msi) | WiX MSI 英文安装包，适合企业/静默部署 |
 
 ---
 
@@ -162,4 +163,3 @@ dsh-ui/
 ## 📄 开源许可证
 
 本项目基于 [MIT License](LICENSE) 协议开源。
-
