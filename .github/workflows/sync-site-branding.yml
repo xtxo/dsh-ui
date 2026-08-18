@@ -1,0 +1,89 @@
+name: Sync Site Branding
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - assets/icon-master.svg
+      - .github/workflows/sync-site-branding.yml
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync little-whale icon into GitHub Pages
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import shutil
+
+          root = Path('.')
+          source = root / 'assets' / 'icon-master.svg'
+
+          favicon_old = '<link rel="icon" type="image/png" href="assets/icon.png">'
+          favicon_new = '<link rel="icon" type="image/svg+xml" href="assets/icon-master.svg">'
+
+          css_pattern = re.compile(
+              r'    \.logo-whale \{.*?    \.logo-whale svg \{.*?    \}\n',
+              re.S,
+          )
+          css_new = '''    .logo-whale {
+              width: 40px;
+              height: 40px;
+              border-radius: 11px;
+              overflow: hidden;
+              flex-shrink: 0;
+              box-shadow: 0 5px 16px rgba(77, 107, 254, 0.35);
+            }
+
+            .logo-whale img {
+              width: 100%;
+              height: 100%;
+              display: block;
+            }
+'''
+
+          logo_pattern = re.compile(
+              r'<div class="logo-whale">\s*<svg\b.*?</svg>\s*</div>',
+              re.S,
+          )
+          logo_new = '<div class="logo-whale"><img src="assets/icon-master.svg" alt="DeepSeek Harness little whale icon"></div>'
+
+          for rel in ('index.html', 'website/index.html'):
+              path = root / rel
+              text = path.read_text(encoding='utf-8')
+              text = text.replace(favicon_old, favicon_new)
+              text, css_count = css_pattern.subn(css_new, text, count=1)
+              text, logo_count = logo_pattern.subn(logo_new, text, count=1)
+              if css_count != 1 or logo_count != 1:
+                  raise SystemExit(f'Could not update expected site logo markup in {rel}: css={css_count}, logo={logo_count}')
+              path.write_text(text, encoding='utf-8')
+              print(f'updated {rel}')
+
+          website_icon = root / 'website' / 'assets' / 'icon-master.svg'
+          website_icon.parent.mkdir(parents=True, exist_ok=True)
+          shutil.copyfile(source, website_icon)
+          print(f'copied {website_icon}')
+          PY
+
+      - name: Commit synced site branding
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Site branding already synchronized"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html website/index.html website/assets/icon-master.svg
+          git commit -m "chore(site): use approved little-whale icon"
+          git push
