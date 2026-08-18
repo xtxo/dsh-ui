@@ -56,9 +56,10 @@ Visit [GitHub Releases (v0.1.9)](https://github.com/xtxo/dsh-ui/releases/tag/v0.
 | Platform | Direct Download | Architecture |
 | :--- | :--- | :--- |
 | **macOS (Apple Silicon)** | 🍏 [**DeepSeek.Harness_0.1.9_aarch64.dmg**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_aarch64.dmg) | M1 / M2 / M3 / M4 Macs |
-| **Windows** | 🪟 [**DeepSeek.Harness_0.1.9_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64-setup.exe) | Windows 10 / 11 64-bit Installer |
-| **Windows MSI (Chinese)** | 🪟 [**DeepSeek.Harness_0.1.9_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64_zh-CN.msi) | MSI Chinese Installer |
-| **Windows MSI (English)** | 🪟 [**DeepSeek.Harness_0.1.9_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64_en-US.msi) | MSI English Installer |
+| **Windows Portable (Recommended)** | 🟢 [**DeepSeek-Harness-Portable.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek-Harness-Portable.exe) | No installation required; download and run |
+| **Windows Setup** | 🪟 [**DeepSeek.Harness_0.1.9_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64-setup.exe) | Windows 10 / 11 64-bit installer for regular users |
+| **Windows MSI (Chinese)** | 🪟 [**DeepSeek.Harness_0.1.9_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64_zh-CN.msi) | WiX MSI installer for enterprise/silent deployment |
+| **Windows MSI (English)** | 🪟 [**DeepSeek.Harness_0.1.9_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64_en-US.msi) | WiX MSI installer for enterprise/silent deployment |
 
 ---
 
