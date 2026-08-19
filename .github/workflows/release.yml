@@ -72,7 +72,29 @@ jobs:
       - name: Install Node dependencies
         run: npm ci || npm install
 
-      - name: Sync v0.1.9 and generate approved whale icons
+      - name: Prepare self-contained Windows runtime
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          $runtimeDir = "src-tauri/runtime/node"
+          $serverDir = "src-tauri/server"
+          Remove-Item $runtimeDir -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item $serverDir -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $runtimeDir | Out-Null
+
+          $nodeExe = (Get-Command node).Source
+          Copy-Item $nodeExe "$runtimeDir/node.exe" -Force
+
+          npm install --prefix $serverDir --omit=dev @deepseek-ai/dsh@latest
+
+          if (-not (Test-Path "$runtimeDir/node.exe")) {
+            throw "Bundled Node runtime was not created"
+          }
+          if (-not (Test-Path "$serverDir/node_modules/@deepseek-ai/dsh/lib/bin.js")) {
+            throw "Bundled DeepSeek Harness server was not created"
+          }
+
+      - name: Sync release metadata and generate approved whale icons
         run: npm run icons
 
       - name: Build Tauri Desktop Application
@@ -86,13 +108,14 @@ jobs:
             ## 🚀 DeepSeek Harness Desktop Client Release
 
             ### 🌟 Highlights
-            - **New little-whale app icon** across Windows, macOS, Linux and the system tray.
-            - **Ultra-lightweight** native Rust + WebView2 / WebKit desktop architecture.
-            - **Zero manual backend setup** with automatic background engine management.
-            - **Version sync** now keeps the client, tray and updater on the same release number.
+            - **Little-whale app icon** across Windows, macOS, Linux and the system tray.
+            - **Self-contained Windows runtime**: bundled Node.js + DeepSeek Harness backend; no separate Node.js install required.
+            - **More reliable WebView2 setup**: Windows installers embed the Microsoft WebView2 bootstrapper.
+            - **Version sync** keeps the client, tray, updater, README and website on the same release number.
 
             ### 📦 Downloads
-            - **Windows**: `.exe` / `.msi`
+            - **Windows Portable**: `.zip` (unzip and run, no installation)
+            - **Windows Installer**: `.exe` / `.msi`
             - **macOS (Apple Silicon M1/M2/M3/M4)**: `.dmg` (`aarch64`)
             - **macOS (Intel)**: `.dmg` (`x86_64`)
             - **Linux**: `.deb` / `.AppImage`
@@ -103,7 +126,7 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
-      - name: Upload Portable Windows Executable
+      - name: Upload self-contained Windows Portable ZIP
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
@@ -111,9 +134,20 @@ jobs:
           if (-not (Test-Path $exePath)) {
             $exePath = "src-tauri/target/release/deepseek-harness.exe"
           }
-          if (Test-Path $exePath) {
-            Copy-Item $exePath "DeepSeek-Harness-Portable.exe" -Force
-            gh release upload ${{ steps.release_meta.outputs.tag }} "DeepSeek-Harness-Portable.exe" --clobber
+          if (-not (Test-Path $exePath)) {
+            throw "Windows executable not found"
           }
+
+          $portableDir = "DeepSeek-Harness-Portable"
+          Remove-Item $portableDir -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $portableDir | Out-Null
+          Copy-Item $exePath "$portableDir/DeepSeek-Harness.exe" -Force
+          Copy-Item "src-tauri/runtime" "$portableDir/runtime" -Recurse -Force
+          Copy-Item "src-tauri/server" "$portableDir/server" -Recurse -Force
+
+          $zipPath = "DeepSeek-Harness-Portable.zip"
+          Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+          Compress-Archive -Path "$portableDir/*" -DestinationPath $zipPath -CompressionLevel Optimal
+          gh release upload ${{ steps.release_meta.outputs.tag }} $zipPath --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
