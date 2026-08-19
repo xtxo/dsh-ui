@@ -366,13 +366,13 @@ pub fn get_injected_updater_script() -> &'static str {
                             ? (assets.find(a => a.name.includes('aarch64.dmg')) || assets.find(a => a.name.endsWith('.dmg')))
                             : (assets.find(a => a.name.includes('x64.dmg') || a.name.includes('x86_64.dmg')) || assets.find(a => a.name.endsWith('.dmg')));
                     } else if (isWindows) {
-                        targetAsset = assets.find(a => a.name.includes('Portable.exe')) || assets.find(a => a.name.endsWith('.exe'));
+                        targetAsset = assets.find(a => a.name.includes('Portable.zip')) || assets.find(a => a.name.endsWith('.exe'));
                     } else {
                         targetAsset = assets.find(a => a.name.endsWith('.deb') || a.name.endsWith('.AppImage'));
                     }
 
                     const targetUrl = targetAsset ? targetAsset.browser_download_url : (release.html_url || 'https://github.com/xtxo/dsh-ui/releases/latest');
-                    const fileName = targetAsset ? targetAsset.name : (isMac ? 'DeepSeek-Harness-macOS.dmg' : (isWindows ? 'DeepSeek-Harness-Portable.exe' : 'DeepSeek-Harness-Linux.deb'));
+                    const fileName = targetAsset ? targetAsset.name : (isMac ? 'DeepSeek-Harness-macOS.dmg' : (isWindows ? 'DeepSeek-Harness-Portable.zip' : 'DeepSeek-Harness-Linux.deb'));
 
                     // Open direct download link in default external browser
                     openExternal(targetUrl);
