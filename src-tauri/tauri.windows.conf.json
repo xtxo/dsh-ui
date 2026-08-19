@@ -2,11 +2,7 @@
   "bundle": {
     "icon": ["icons/icon.ico"],
     "active": true,
-    "resources": [
-      "icons/icon.ico",
-      "runtime/node/**/*",
-      "server/**/*"
-    ],
+    "resources": ["icons/icon.ico"],
     "targets": ["nsis", "msi"],
     "windows": {
       "digestAlgorithm": "sha256",
