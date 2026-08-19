@@ -2,10 +2,17 @@
   "bundle": {
     "icon": ["icons/icon.ico"],
     "active": true,
-    "resources": ["icons/icon.ico"],
+    "resources": [
+      "icons/icon.ico",
+      "runtime/node/**/*",
+      "server/**/*"
+    ],
     "targets": ["nsis", "msi"],
     "windows": {
       "digestAlgorithm": "sha256",
+      "webviewInstallMode": {
+        "type": "embedBootstrapper"
+      },
       "wix": {
         "language": ["en-US", "zh-CN"]
       }
