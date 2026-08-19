@@ -31,7 +31,7 @@ const syncReleaseReferences = (text) => text
   .replace(/DeepSeek\.Harness_\d+\.\d+\.\d+/g, `DeepSeek.Harness_${version}`)
   .replace(/DeepSeek-Harness-Portable\.exe/g, 'DeepSeek-Harness-Portable.zip')
   .replace(/Portable\.exe/g, 'Portable.zip')
-  .replace(/无需安装，下载后直接运行/g, '无需安装，解压后运行 DeepSeek-Harness.exe')
+  .replace(/无需安装，下载后直接运行/g, '无需安装，解压后运行 DeepSeek-Harness.exe（自带 Node + dsh）')
   .replace(/下载免安装绿色版 \(\.exe 直接运行\)/g, '下载免安装绿色版 (.zip 解压即用)')
   .replace(/Download Windows \(\.exe Setup\)/g, 'Download Windows Portable (.zip)')
   .replace(/\(v\d+\.\d+\.\d+\)/g, `(${tag})`)
@@ -60,9 +60,11 @@ const cargoLock = read('src-tauri/Cargo.lock').replace(
 );
 writeIfChanged('src-tauri/Cargo.lock', cargoLock);
 
-// Runtime-facing version labels and updater comparison tag.
+// Runtime-facing version labels, updater comparison tag and portable asset name.
 for (const rel of ['src-tauri/src/app/setup.rs', 'src-tauri/src/app/backend.rs']) {
-  const next = read(rel).replace(/v\d+\.\d+\.\d+/g, tag);
+  const next = read(rel)
+    .replace(/v\d+\.\d+\.\d+/g, tag)
+    .replace(/Portable\.exe/g, 'Portable.zip');
   writeIfChanged(rel, next);
 }
 
