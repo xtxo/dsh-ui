@@ -44,6 +44,31 @@ mod windows_runtime {
             .unwrap_or(false)
     }
 
+    fn system_node_is_compatible() -> bool {
+        if !command_exists("node") {
+            return false;
+        }
+
+        let Ok(output) = Command::new("node")
+            .arg("--version")
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+        else {
+            return false;
+        };
+        if !output.status.success() {
+            return false;
+        }
+
+        let version = String::from_utf8_lossy(&output.stdout);
+        let mut parts = version.trim().trim_start_matches('v').split('.');
+        let major = parts.next().and_then(|value| value.parse::<u32>().ok());
+        let minor = parts.next().and_then(|value| value.parse::<u32>().ok());
+
+        matches!((major, minor), (Some(22), Some(minor)) if minor >= 19)
+            || matches!(major, Some(major) if major >= 24)
+    }
+
     fn executable_dir() -> Option<PathBuf> {
         env::current_exe()
             .ok()
@@ -78,11 +103,11 @@ mod windows_runtime {
         )
     }
 
-    fn add_runtime_to_path(runtime_dir: &Path, system_node_exists: bool) {
+    fn add_runtime_to_path(runtime_dir: &Path, compatible_system_node_exists: bool) {
         let current_path = env::var_os("PATH").unwrap_or_default();
         let mut paths: Vec<PathBuf> = env::split_paths(&current_path).collect();
 
-        if system_node_exists {
+        if compatible_system_node_exists {
             paths.push(runtime_dir.to_path_buf());
         } else {
             paths.insert(0, runtime_dir.to_path_buf());
@@ -160,16 +185,16 @@ if (-not (Test-Path (Join-Path $runtimeDir 'npx.cmd'))) {{
     }
 
     pub fn prepare() {
-        let system_node = command_exists("node");
+        let system_node = system_node_is_compatible();
         let system_npx = command_exists("npx");
 
-        // Best case: use the user's existing Node.js toolchain unchanged.
+        // Best case: keep using the user's compatible Node.js toolchain unchanged.
         if system_node && system_npx {
             return;
         }
 
-        // Portable ZIP ships a private node.exe + bundled dsh server. If a system
-        // Node exists we deliberately leave PATH alone so the system Node wins.
+        // Portable ZIP ships a private node.exe + bundled dsh server. If a compatible
+        // system Node exists we deliberately leave PATH alone so the system Node wins.
         if let Some(runtime_dir) = bundled_portable_runtime() {
             if !system_node {
                 add_runtime_to_path(&runtime_dir, false);
@@ -180,7 +205,7 @@ if (-not (Test-Path (Join-Path $runtimeDir 'npx.cmd'))) {{
         let Some(runtime_dir) = private_runtime_dir() else {
             message_box(
                 "DSH-UI 启动失败",
-                "未检测到可用的 Node.js / npx，并且无法确定用户运行时目录。",
+                "未检测到兼容的 Node.js / npx，并且无法确定用户运行时目录。",
                 MB_OK | MB_ICONERROR,
             );
             return;
@@ -193,7 +218,7 @@ if (-not (Test-Path (Join-Path $runtimeDir 'npx.cmd'))) {{
 
         message_box(
             "DSH-UI 首次启动",
-            "未检测到完整的 Node.js + npx 环境。\n\nDSH-UI 将从 Node.js 官方下载约 36 MB 的便携运行时到当前用户目录，仅首次需要；不会安装到系统，也不需要管理员权限。",
+            "未检测到兼容的 Node.js + npx 环境（DeepSeek Harness 当前要求 Node 22.19+ 或 24+）。\n\nDSH-UI 将从 Node.js 官方下载约 36 MB 的便携 Node 22.23.2 到当前用户目录，仅首次需要；不会安装到系统，也不需要管理员权限。",
             MB_OK | MB_ICONINFORMATION,
         );
 
@@ -202,7 +227,7 @@ if (-not (Test-Path (Join-Path $runtimeDir 'npx.cmd'))) {{
             Err(error) => message_box(
                 "DSH-UI 运行环境准备失败",
                 &format!(
-                    "{error}\n\n你也可以自行安装 Node.js 22+ 后重新启动 DSH-UI。"
+                    "{error}\n\n你也可以自行安装 Node.js 22.19+ 或 24+ 后重新启动 DSH-UI。"
                 ),
                 MB_OK | MB_ICONERROR,
             ),
