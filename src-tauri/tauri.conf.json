@@ -1,7 +1,7 @@
 {
   "productName": "DeepSeek Harness",
   "identifier": "com.deepseek.harness",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "app": {
     "withGlobalTauri": true,
     "trayIcon": {
