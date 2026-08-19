@@ -72,28 +72,6 @@ jobs:
       - name: Install Node dependencies
         run: npm ci || npm install
 
-      - name: Prepare self-contained Windows runtime
-        if: matrix.platform == 'windows-latest'
-        shell: pwsh
-        run: |
-          $runtimeDir = "src-tauri/runtime/node"
-          $serverDir = "src-tauri/server"
-          Remove-Item $runtimeDir -Recurse -Force -ErrorAction SilentlyContinue
-          Remove-Item $serverDir -Recurse -Force -ErrorAction SilentlyContinue
-          New-Item -ItemType Directory -Force -Path $runtimeDir | Out-Null
-
-          $nodeExe = (Get-Command node).Source
-          Copy-Item $nodeExe "$runtimeDir/node.exe" -Force
-
-          npm install --prefix $serverDir --omit=dev @deepseek-ai/dsh@latest
-
-          if (-not (Test-Path "$runtimeDir/node.exe")) {
-            throw "Bundled Node runtime was not created"
-          }
-          if (-not (Test-Path "$serverDir/node_modules/@deepseek-ai/dsh/lib/bin.js")) {
-            throw "Bundled DeepSeek Harness server was not created"
-          }
-
       - name: Sync release metadata and generate approved whale icons
         run: npm run icons
 
@@ -109,13 +87,14 @@ jobs:
 
             ### 🌟 Highlights
             - **Little-whale app icon** across Windows, macOS, Linux and the system tray.
-            - **Self-contained Windows runtime**: bundled Node.js + DeepSeek Harness backend; no separate Node.js install required.
+            - **Lightweight Windows installers**: use system Node.js/npx first; if missing, DSH-UI downloads a verified private Node.js runtime on first launch.
+            - **Self-contained Windows Portable ZIP**: includes a private Node.js runtime + DeepSeek Harness backend for clean machines.
             - **More reliable WebView2 setup**: Windows installers embed the Microsoft WebView2 bootstrapper.
             - **Version sync** keeps the client, tray, updater, README and website on the same release number.
 
             ### 📦 Downloads
-            - **Windows Portable**: `.zip` (unzip and run, no installation)
-            - **Windows Installer**: `.exe` / `.msi`
+            - **Windows Portable**: `.zip` (self-contained, unzip and run)
+            - **Windows Installer**: `.exe` / `.msi` (smaller; smart runtime detection)
             - **macOS (Apple Silicon M1/M2/M3/M4)**: `.dmg` (`aarch64`)
             - **macOS (Intel)**: `.dmg` (`x86_64`)
             - **Linux**: `.deb` / `.AppImage`
@@ -140,10 +119,20 @@ jobs:
 
           $portableDir = "DeepSeek-Harness-Portable"
           Remove-Item $portableDir -Recurse -Force -ErrorAction SilentlyContinue
-          New-Item -ItemType Directory -Force -Path $portableDir | Out-Null
+          New-Item -ItemType Directory -Force -Path "$portableDir/runtime/node" | Out-Null
+          New-Item -ItemType Directory -Force -Path "$portableDir/server" | Out-Null
+
           Copy-Item $exePath "$portableDir/DeepSeek-Harness.exe" -Force
-          Copy-Item "src-tauri/runtime" "$portableDir/runtime" -Recurse -Force
-          Copy-Item "src-tauri/server" "$portableDir/server" -Recurse -Force
+          $nodeExe = (Get-Command node).Source
+          Copy-Item $nodeExe "$portableDir/runtime/node/node.exe" -Force
+          npm install --prefix "$portableDir/server" --omit=dev @deepseek-ai/dsh@latest
+
+          if (-not (Test-Path "$portableDir/runtime/node/node.exe")) {
+            throw "Portable Node runtime was not created"
+          }
+          if (-not (Test-Path "$portableDir/server/node_modules/@deepseek-ai/dsh/lib/bin.js")) {
+            throw "Portable DeepSeek Harness server was not created"
+          }
 
           $zipPath = "DeepSeek-Harness-Portable.zip"
           Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
