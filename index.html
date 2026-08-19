@@ -787,7 +787,7 @@
             </a>
 
             <!-- Windows Download Button (Portable Direct Run) -->
-            <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek-Harness-Portable.exe" class="btn-download-white" id="btn-hero-win">
+            <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek-Harness-Portable.zip" class="btn-download-white" id="btn-hero-win">
               <svg width="18" height="18" viewBox="0 0 88 88" fill="currentColor">
                 <path d="M0 12.402l35.687-4.86.016 34.423-35.67.243L0 12.402zm35.67 33.528l.028 34.453L.028 75.48.001 46.162l35.697-.232zm4.313-39.023L87.954 0v41.527l-47.971.375V6.907zm47.971 38.895v42.198l-47.971-6.755V46.064l47.971-.262z"/>
               </svg>
@@ -913,8 +913,8 @@
         </div>
         <div class="download-os-name">Windows</div>
         <div class="download-os-desc">Windows 10 / 11 (64-bit)</div>
-        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek-Harness-Portable.exe" class="dl-btn" id="btn-dl-win-portable" data-i18n="btn_dl_win">
-          下载免安装绿色版 (.exe 直接运行)
+        <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek-Harness-Portable.zip" class="dl-btn" id="btn-dl-win-portable" data-i18n="btn_dl_win">
+          下载免安装绿色版 (.zip 解压即用)
         </a>
         <div style="display: flex; gap: 12px; margin-top: 6px;">
           <a href="https://github.com/xtxo/dsh-ui/releases/download/v0.1.9/DeepSeek.Harness_0.1.9_x64-setup.exe" class="sub-link" id="btn-dl-win-setup" data-i18n="btn_dl_win_setup">下载 Setup 安装版</a>
@@ -1057,7 +1057,7 @@
         dl_sec_desc: "选择适用于你操作系统的安装包或可执行文件 (v0.1.9)",
         btn_dl_mac: "下载 Apple Silicon (.dmg)",
         btn_dl_mac_intel: "下载 Intel 架构 (.dmg)",
-        btn_dl_win: "下载免安装绿色版 (.exe 直接运行)",
+        btn_dl_win: "下载免安装绿色版 (.zip 解压即用)",
         btn_dl_win_setup: "下载 Setup 安装版",
         btn_dl_win_msi: "下载 .msi 安装包",
         btn_dl_linux: "查看 GitHub Releases",
@@ -1099,7 +1099,7 @@
         dl_sec_desc: "Select the installer matching your operating system (v0.1.9)",
         btn_dl_mac: "Download Apple Silicon (.dmg)",
         btn_dl_mac_intel: "Download Intel Mac (.dmg)",
-        btn_dl_win: "Download Windows (.exe Setup)",
+        btn_dl_win: "Download Windows Portable (.zip)",
         btn_dl_win_msi: "Download .msi Installer",
         btn_dl_linux: "View GitHub Releases",
         btn_dl_linux_deb: "Build from Source",
@@ -1152,7 +1152,7 @@
         const assets = release.assets || [];
         const macArm = assets.find(a => a.name.includes('aarch64.dmg') || a.name.includes('arm64.dmg'));
         const macIntel = assets.find(a => a.name.includes('x64.dmg') || a.name.includes('x86_64.dmg'));
-        const winPortable = assets.find(a => a.name.includes('Portable.exe'));
+        const winPortable = assets.find(a => a.name.includes('Portable.zip'));
         const winSetup = assets.find(a => a.name.includes('setup.exe') || a.name.includes('Setup.exe'));
         const winMsiZh = assets.find(a => a.name.includes('zh-CN.msi'));
         const winMsiEn = assets.find(a => a.name.includes('en-US.msi') || a.name.endsWith('.msi'));
