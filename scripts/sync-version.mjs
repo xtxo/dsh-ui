@@ -29,6 +29,11 @@ const syncReleaseReferences = (text) => text
     `https://github.com/xtxo/dsh-ui/releases/download/${tag}/`,
   )
   .replace(/DeepSeek\.Harness_\d+\.\d+\.\d+/g, `DeepSeek.Harness_${version}`)
+  .replace(/DeepSeek-Harness-Portable\.exe/g, 'DeepSeek-Harness-Portable.zip')
+  .replace(/Portable\.exe/g, 'Portable.zip')
+  .replace(/无需安装，下载后直接运行/g, '无需安装，解压后运行 DeepSeek-Harness.exe')
+  .replace(/下载免安装绿色版 \(\.exe 直接运行\)/g, '下载免安装绿色版 (.zip 解压即用)')
+  .replace(/Download Windows \(\.exe Setup\)/g, 'Download Windows Portable (.zip)')
   .replace(/\(v\d+\.\d+\.\d+\)/g, `(${tag})`)
   .replace(/(latest-ver-badge">)v\d+\.\d+\.\d+(<)/g, `$1${tag}$2`);
 
