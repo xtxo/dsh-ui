@@ -101,9 +101,9 @@ mod windows_runtime {
             .map_err(|error| format!("无法创建运行时目录: {error}"))?;
 
         let zip_path = runtime_root.join(NODE_ARCHIVE);
-        let runtime_root_text = runtime_root.to_string_lossy().replace(''', "''");
-        let zip_path_text = zip_path.to_string_lossy().replace(''', "''");
-        let runtime_dir_text = runtime_dir.to_string_lossy().replace(''', "''");
+        let runtime_root_text = runtime_root.to_string_lossy().replace("'", "''");
+        let zip_path_text = zip_path.to_string_lossy().replace("'", "''");
+        let runtime_dir_text = runtime_dir.to_string_lossy().replace("'", "''");
 
         let script = format!(
             r#"$ErrorActionPreference = 'Stop'
