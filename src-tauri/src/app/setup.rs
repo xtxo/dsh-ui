@@ -27,7 +27,7 @@ pub fn set_system_tray(
     }
 
     // Menu events are broadcast to every handler in Tauri v2, so the tray item
-    let version_item = MenuItemBuilder::with_id("app_version", "DeepSeek Harness v0.1.10")
+    let version_item = MenuItemBuilder::with_id("app_version", "DeepSeek Harness v0.1.11")
         .enabled(false)
         .build(app)?;
     let check_update = MenuItemBuilder::with_id("check_update", "🔍 检查更新 (Check Updates)").build(app)?;
@@ -52,7 +52,7 @@ pub fn set_system_tray(
     let click_revealed = startup_revealed;
     let mut tray_builder = TrayIconBuilder::new()
         .menu(&menu)
-        .tooltip("DeepSeek Harness v0.1.10 (双击打开)")
+        .tooltip("DeepSeek Harness v0.1.11 (双击打开)")
         .on_menu_event(move |app, event| match event.id().as_ref() {
             "tray_new_window" => {
                 open_additional_window_safe(app);

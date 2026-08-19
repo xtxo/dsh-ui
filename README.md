@@ -51,15 +51,15 @@
 
 ## 📥 快速下载
 
-前往 [GitHub Releases 页面 (v0.1.10)](https://github.com/xtxo/dsh-ui/releases/tag/v0.1.10) 或直接点击下方直链下载：
+前往 [GitHub Releases 页面 (v0.1.11)](https://github.com/xtxo/dsh-ui/releases/tag/v0.1.11) 或直接点击下方直链下载：
 
 | 平台 | 安装包直接下载 | 架构说明 |
 | :--- | :--- | :--- |
-| **macOS (Apple Silicon)** | 🍏 [**DeepSeek.Harness_0.1.10_aarch64.dmg**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.10/DeepSeek.Harness_0.1.10_aarch64.dmg) | M1 / M2 / M3 / M4 系列 Mac |
-| **Windows 绿色免安装版（推荐）** | 🟢 [**DeepSeek-Harness-Portable.zip**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.10/DeepSeek-Harness-Portable.zip) | 无需安装，解压后运行 DeepSeek-Harness.exe |
-| **Windows Setup 安装版** | 🪟 [**DeepSeek.Harness_0.1.10_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.10/DeepSeek.Harness_0.1.10_x64-setup.exe) | Windows 10 / 11 64位，适合普通用户安装 |
-| **Windows MSI (中文)** | 🪟 [**DeepSeek.Harness_0.1.10_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.10/DeepSeek.Harness_0.1.10_x64_zh-CN.msi) | WiX MSI 中文安装包，适合企业/静默部署 |
-| **Windows MSI (英文)** | 🪟 [**DeepSeek.Harness_0.1.10_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.10/DeepSeek.Harness_0.1.10_x64_en-US.msi) | WiX MSI 英文安装包，适合企业/静默部署 |
+| **macOS (Apple Silicon)** | 🍏 [**DeepSeek.Harness_0.1.11_aarch64.dmg**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.11/DeepSeek.Harness_0.1.11_aarch64.dmg) | M1 / M2 / M3 / M4 系列 Mac |
+| **Windows 绿色免安装版（推荐）** | 🟢 [**DeepSeek-Harness-Portable.zip**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.11/DeepSeek-Harness-Portable.zip) | 无需安装，解压后运行 DeepSeek-Harness.exe |
+| **Windows Setup 安装版** | 🪟 [**DeepSeek.Harness_0.1.11_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.11/DeepSeek.Harness_0.1.11_x64-setup.exe) | Windows 10 / 11 64位，适合普通用户安装 |
+| **Windows MSI (中文)** | 🪟 [**DeepSeek.Harness_0.1.11_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.11/DeepSeek.Harness_0.1.11_x64_zh-CN.msi) | WiX MSI 中文安装包，适合企业/静默部署 |
+| **Windows MSI (英文)** | 🪟 [**DeepSeek.Harness_0.1.11_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.11/DeepSeek.Harness_0.1.11_x64_en-US.msi) | WiX MSI 英文安装包，适合企业/静默部署 |
 
 ---
 
