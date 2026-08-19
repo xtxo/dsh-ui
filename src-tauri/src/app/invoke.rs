@@ -244,25 +244,40 @@ pub fn set_zoom(window: WebviewWindow, percent: f64) -> Result<(), String> {
 }
 
 /// Native navigation for injected shortcuts (Linux/Windows Ctrl+R / [ / ]).
-/// Blank error pages have no JS context, so page `history` / `location` calls
-/// are no-ops; these use the platform webview API instead.
+/// Also owns the internal engine-update action so the updater can reuse an
+/// already-registered Tauri command instead of exposing a second command surface.
 #[command]
-pub fn webview_navigate(window: WebviewWindow, action: String) -> Result<(), String> {
+pub async fn webview_navigate(window: WebviewWindow, action: String) -> Result<String, String> {
     match action.as_str() {
         "reload" => {
             reload_window(&window);
-            Ok(())
+            Ok("ok".to_string())
         }
         "back" => {
             history_step(&window, true);
-            Ok(())
+            Ok("ok".to_string())
         }
         "forward" => {
             history_step(&window, false);
-            Ok(())
+            Ok("ok".to_string())
+        }
+        "update_engine" => {
+            let message = tokio::task::spawn_blocking(crate::app::setup::update_dsh_engine)
+                .await
+                .map_err(|error| format!("内核更新任务异常结束: {error}"))??;
+
+            use tauri_plugin_notification::NotificationExt;
+            let _ = window
+                .app_handle()
+                .notification()
+                .builder()
+                .title("DeepSeek Harness 内核更新完成")
+                .body("@deepseek-ai/dsh 已更新，请重启 DSH-UI 使新内核生效")
+                .show();
+            Ok(message)
         }
         other => Err(format!(
-            "Unknown webview_navigate action '{other}' (expected reload|back|forward)"
+            "Unknown webview_navigate action '{other}' (expected reload|back|forward|update_engine)"
         )),
     }
 }
