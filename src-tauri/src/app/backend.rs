@@ -297,7 +297,7 @@ pub fn get_injected_updater_script() -> &'static str {
                     </div>
                     
                     <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 14px; margin-bottom:16px; font-size:13px; line-height:1.9;">
-                        <div><strong>桌面客户端外壳 (${platformName})：</strong> <span style="color:#60a5fa; font-weight:600;">v0.1.9</span></div>
+                        <div><strong>桌面客户端外壳 (${platformName})：</strong> <span style="color:#60a5fa; font-weight:600;">v0.1.10</span></div>
                         <div><strong>智能体官方内核：</strong> <span style="color:#34d399; font-weight:600;">@deepseek-ai/dsh</span></div>
                         <div><strong>底层引擎架构：</strong> <span>Rust + 原生 WebKit/Webview (仅 8.7MB)</span></div>
                     </div>
@@ -478,7 +478,7 @@ pub fn perform_update_check(window: &WebviewWindow, force: bool) {
                 let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
                 if let Ok(release) = serde_json::from_str::<serde_json::Value>(&stdout) {
                     if let Some(tag) = release.get("tag").and_then(|v| v.as_str()) {
-                        let current_tag = "v0.1.9";
+                        let current_tag = "v0.1.10";
                         if tag != current_tag && !tag.is_empty() {
                             println!("[DSH-UI] New client shell release found on GitHub: {}", tag);
                             let url = release.get("url").and_then(|v| v.as_str()).unwrap_or("https://github.com/xtxo/dsh-ui/releases/latest");
