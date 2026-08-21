@@ -2,10 +2,10 @@ name: Build Windows Portable
 
 on:
   push:
+    tags:
+      - 'v*'
     branches:
       - main
-    paths:
-      - .github/workflows/windows-portable.yml
   workflow_dispatch:
 
 permissions:
@@ -13,6 +13,10 @@ permissions:
 
 jobs:
   portable:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(release): v'))
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -28,8 +32,12 @@ jobs:
         id: release_meta
         shell: pwsh
         run: |
-          $version = node -p "require('./package.json').version"
-          $tag = "v$version"
+          if ($env:GITHUB_REF -like 'refs/tags/v*') {
+            $tag = $env:GITHUB_REF_NAME
+          } else {
+            $version = node -p "require('./package.json').version"
+            $tag = "v$version"
+          }
           "tag=$tag" >> $env:GITHUB_OUTPUT
           Write-Host "Portable target release: $tag"
 
@@ -74,9 +82,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path $serverDir | Out-Null
           Copy-Item $exePath (Join-Path $portableDir "DeepSeek-Harness.exe") -Force
 
-          # Do not depend on GitHub Runner's internal setup-node directory layout.
-          # Download the matching official Node Windows distribution so npm/npx and
-          # their JS payload are guaranteed to be present in the portable package.
+          # Download the matching official Node Windows distribution instead of
+          # depending on the GitHub runner's internal setup-node directory layout.
           $nodeVersion = (& node -p "process.versions.node").Trim()
           $nodeArchiveName = "node-v$nodeVersion-win-x64.zip"
           $nodeArchive = Join-Path $env:RUNNER_TEMP $nodeArchiveName
@@ -117,8 +124,7 @@ jobs:
 
           $zipPath = Join-Path $PWD "DeepSeek-Harness-Portable.zip"
           Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
-          # bsdtar on the Windows runner handles large/deep node_modules trees more
-          # reliably than PowerShell Compress-Archive.
+          # bsdtar handles deep node_modules trees more reliably than Compress-Archive.
           & tar.exe -a -c -f $zipPath -C $portableDir .
           if ($LASTEXITCODE -ne 0 -or -not (Test-Path $zipPath)) {
             throw "Portable ZIP creation failed"
