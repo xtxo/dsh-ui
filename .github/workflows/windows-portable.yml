@@ -1,0 +1,149 @@
+name: Build Windows Portable
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/windows-portable.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  portable:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Resolve release tag
+        id: release_meta
+        shell: pwsh
+        run: |
+          $version = node -p "require('./package.json').version"
+          $tag = "v$version"
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          Write-Host "Portable target release: $tag"
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install project dependencies
+        shell: pwsh
+        run: npm ci
+
+      - name: Sync metadata and icons
+        shell: pwsh
+        run: npm run icons
+
+      - name: Build Windows executable only
+        shell: pwsh
+        run: npm run tauri -- build --target x86_64-pc-windows-msvc --no-bundle
+
+      - name: Assemble and upload self-contained Portable ZIP
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.release_meta.outputs.tag }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $exePath = "src-tauri/target/x86_64-pc-windows-msvc/release/deepseek-harness.exe"
+          if (-not (Test-Path $exePath)) {
+            $exePath = "src-tauri/target/release/deepseek-harness.exe"
+          }
+          if (-not (Test-Path $exePath)) {
+            throw "Windows executable not found"
+          }
+
+          $portableDir = Join-Path $PWD "DeepSeek-Harness-Portable"
+          $runtimeDir = Join-Path $portableDir "runtime/node"
+          $serverDir = Join-Path $portableDir "server"
+          Remove-Item $portableDir -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $runtimeDir | Out-Null
+          New-Item -ItemType Directory -Force -Path $serverDir | Out-Null
+          Copy-Item $exePath (Join-Path $portableDir "DeepSeek-Harness.exe") -Force
+
+          # Do not depend on GitHub Runner's internal setup-node directory layout.
+          # Download the matching official Node Windows distribution so npm/npx and
+          # their JS payload are guaranteed to be present in the portable package.
+          $nodeVersion = (& node -p "process.versions.node").Trim()
+          $nodeArchiveName = "node-v$nodeVersion-win-x64.zip"
+          $nodeArchive = Join-Path $env:RUNNER_TEMP $nodeArchiveName
+          $nodeExtractRoot = Join-Path $env:RUNNER_TEMP "dsh-node-portable"
+          $nodeDistDir = Join-Path $nodeExtractRoot "node-v$nodeVersion-win-x64"
+          Remove-Item $nodeExtractRoot -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $nodeExtractRoot | Out-Null
+
+          $nodeUrl = "https://nodejs.org/dist/v$nodeVersion/$nodeArchiveName"
+          Write-Host "Downloading official Node.js portable runtime: $nodeUrl"
+          Invoke-WebRequest -Uri $nodeUrl -OutFile $nodeArchive
+          Expand-Archive -Path $nodeArchive -DestinationPath $nodeExtractRoot -Force
+          if (-not (Test-Path (Join-Path $nodeDistDir "node.exe"))) {
+            throw "Official Node.js archive did not contain node.exe"
+          }
+          Copy-Item (Join-Path $nodeDistDir "*") $runtimeDir -Recurse -Force
+
+          $portableNpm = Join-Path $runtimeDir "npm.cmd"
+          $portableNpx = Join-Path $runtimeDir "npx.cmd"
+          if (-not (Test-Path $portableNpm)) { throw "Portable npm.cmd was not created" }
+          if (-not (Test-Path $portableNpx)) { throw "Portable npx.cmd was not created" }
+
+          Write-Host "Installing @deepseek-ai/dsh into portable server directory..."
+          & $portableNpm install --prefix $serverDir --omit=dev --registry https://registry.npmjs.org @deepseek-ai/dsh@latest
+          if ($LASTEXITCODE -ne 0) {
+            throw "Portable DeepSeek Harness npm install failed with exit code $LASTEXITCODE"
+          }
+
+          $dshBin = Join-Path $serverDir "node_modules/@deepseek-ai/dsh/lib/bin.js"
+          $dshPackage = Join-Path $serverDir "node_modules/@deepseek-ai/dsh/package.json"
+          if (-not (Test-Path $dshBin)) { throw "Portable DeepSeek Harness bin.js was not created" }
+          if (-not (Test-Path $dshPackage)) { throw "Portable DeepSeek Harness package.json was not created" }
+
+          $embeddedNodeVersion = & (Join-Path $runtimeDir "node.exe") -p "process.versions.node"
+          $embeddedDshVersion = & (Join-Path $runtimeDir "node.exe") -p "require(process.argv[1]).version" $dshPackage
+          Write-Host "Portable Node.js: $embeddedNodeVersion"
+          Write-Host "Portable @deepseek-ai/dsh: $embeddedDshVersion"
+
+          $zipPath = Join-Path $PWD "DeepSeek-Harness-Portable.zip"
+          Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+          # bsdtar on the Windows runner handles large/deep node_modules trees more
+          # reliably than PowerShell Compress-Archive.
+          & tar.exe -a -c -f $zipPath -C $portableDir .
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path $zipPath)) {
+            throw "Portable ZIP creation failed"
+          }
+
+          $zipSizeMb = [math]::Round((Get-Item $zipPath).Length / 1MB, 1)
+          Write-Host "Portable ZIP created: $zipSizeMb MB"
+
+          gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY | Out-Null
+          if ($LASTEXITCODE -ne 0) {
+            throw "Release $env:RELEASE_TAG does not exist"
+          }
+
+          $uploaded = $false
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            Write-Host "Upload attempt $attempt..."
+            gh release upload $env:RELEASE_TAG $zipPath --clobber --repo $env:GITHUB_REPOSITORY
+            if ($LASTEXITCODE -eq 0) {
+              $uploaded = $true
+              break
+            }
+            Start-Sleep -Seconds (5 * $attempt)
+          }
+          if (-not $uploaded) {
+            throw "Failed to upload DeepSeek-Harness-Portable.zip after 3 attempts"
+          }
+
+          Write-Host "Uploaded DeepSeek-Harness-Portable.zip to $env:RELEASE_TAG"
