@@ -89,7 +89,7 @@ jobs:
             - **Little-whale app icon** across Windows, macOS, Linux and the system tray.
             - **Lightweight Windows installers**: use system Node.js/npx first; if missing, DSH-UI downloads a verified private Node.js runtime on first launch.
             - **Real DeepSeek Harness engine updates**: detects new `@deepseek-ai/dsh` releases, sends a native notification and can update the engine from inside DSH-UI.
-            - **Self-contained Windows Portable ZIP**: includes Node.js, npm/npx and the DeepSeek Harness backend for clean machines.
+            - **Self-contained Windows Portable ZIP**: built and uploaded by the dedicated Windows Portable workflow with Node.js, npm/npx and the DeepSeek Harness backend for clean machines.
             - **More reliable WebView2 setup**: Windows installers embed the Microsoft WebView2 bootstrapper.
             - **Version sync** keeps the client, tray, updater, README and website on the same release number.
 
@@ -105,53 +105,3 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
-
-      - name: Upload self-contained Windows Portable ZIP
-        if: matrix.platform == 'windows-latest'
-        shell: pwsh
-        run: |
-          $exePath = "src-tauri/target/x86_64-pc-windows-msvc/release/deepseek-harness.exe"
-          if (-not (Test-Path $exePath)) {
-            $exePath = "src-tauri/target/release/deepseek-harness.exe"
-          }
-          if (-not (Test-Path $exePath)) {
-            throw "Windows executable not found"
-          }
-
-          $portableDir = "DeepSeek-Harness-Portable"
-          Remove-Item $portableDir -Recurse -Force -ErrorAction SilentlyContinue
-          New-Item -ItemType Directory -Force -Path "$portableDir/runtime/node/node_modules" | Out-Null
-          New-Item -ItemType Directory -Force -Path "$portableDir/server" | Out-Null
-
-          Copy-Item $exePath "$portableDir/DeepSeek-Harness.exe" -Force
-
-          # Include enough of the official Node distribution for both runtime use
-          # and future in-app `npm install @deepseek-ai/dsh@latest` updates.
-          $nodeExe = (Get-Command node).Source
-          $nodeDir = Split-Path $nodeExe -Parent
-          Copy-Item $nodeExe "$portableDir/runtime/node/node.exe" -Force
-          Copy-Item "$nodeDir/npm.cmd" "$portableDir/runtime/node/npm.cmd" -Force
-          Copy-Item "$nodeDir/npx.cmd" "$portableDir/runtime/node/npx.cmd" -Force
-          Copy-Item "$nodeDir/node_modules/npm" "$portableDir/runtime/node/node_modules/npm" -Recurse -Force
-
-          npm install --prefix "$portableDir/server" --omit=dev @deepseek-ai/dsh@latest
-
-          if (-not (Test-Path "$portableDir/runtime/node/node.exe")) {
-            throw "Portable Node runtime was not created"
-          }
-          if (-not (Test-Path "$portableDir/runtime/node/npm.cmd")) {
-            throw "Portable npm runtime was not created"
-          }
-          if (-not (Test-Path "$portableDir/runtime/node/npx.cmd")) {
-            throw "Portable npx runtime was not created"
-          }
-          if (-not (Test-Path "$portableDir/server/node_modules/@deepseek-ai/dsh/lib/bin.js")) {
-            throw "Portable DeepSeek Harness server was not created"
-          }
-
-          $zipPath = "DeepSeek-Harness-Portable.zip"
-          Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
-          Compress-Archive -Path "$portableDir/*" -DestinationPath $zipPath -CompressionLevel Optimal
-          gh release upload ${{ steps.release_meta.outputs.tag }} $zipPath --clobber
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
