@@ -89,7 +89,7 @@ jobs:
             - **Little-whale app icon** across Windows, macOS, Linux and the system tray.
             - **Lightweight Windows installers**: use system Node.js/npx first; if missing, DSH-UI downloads a verified private Node.js runtime on first launch.
             - **Real DeepSeek Harness engine updates**: detects new `@deepseek-ai/dsh` releases, sends a native notification and can update the engine from inside DSH-UI.
-            - **Self-contained Windows Portable ZIP**: built and uploaded by the dedicated Windows Portable workflow with Node.js, npm/npx and the DeepSeek Harness backend for clean machines.
+            - **Self-contained Windows Portable ZIP**: includes Node.js, npm/npx and the DeepSeek Harness backend for clean machines.
             - **More reliable WebView2 setup**: Windows installers embed the Microsoft WebView2 bootstrapper.
             - **Version sync** keeps the client, tray, updater, README and website on the same release number.
 
@@ -105,3 +105,145 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+
+  portable-repair:
+    if: >
+      github.ref == 'refs/heads/main' &&
+      startsWith(github.event.head_commit.message, 'chore(portable): v')
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+          cache: 'npm'
+
+      - name: Resolve release tag
+        id: portable_meta
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = (& node -p "require('./package.json').version").Trim()
+          if (-not $version) { throw "package.json version is empty" }
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Portable repair target: v$version"
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install project dependencies
+        shell: pwsh
+        run: |
+          npm ci
+          if ($LASTEXITCODE -ne 0) { throw "npm ci failed" }
+
+      - name: Sync metadata and icons
+        shell: pwsh
+        run: |
+          npm run icons
+          if ($LASTEXITCODE -ne 0) { throw "npm run icons failed" }
+
+      - name: Build Windows executable
+        shell: pwsh
+        run: |
+          npm run tauri -- build --target x86_64-pc-windows-msvc --no-bundle
+          if ($LASTEXITCODE -ne 0) { throw "Tauri Windows build failed" }
+
+      - name: Assemble Portable ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $exeCandidates = @(
+            "src-tauri/target/x86_64-pc-windows-msvc/release/deepseek-harness.exe",
+            "src-tauri/target/release/deepseek-harness.exe"
+          )
+          $exePath = $exeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $exePath) { throw "Windows executable not found" }
+
+          $portableDir = Join-Path $PWD "DeepSeek-Harness-Portable"
+          $runtimeDir = Join-Path $portableDir "runtime/node"
+          $serverDir = Join-Path $portableDir "server"
+          Remove-Item $portableDir -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $runtimeDir | Out-Null
+          New-Item -ItemType Directory -Force -Path $serverDir | Out-Null
+          Copy-Item $exePath (Join-Path $portableDir "DeepSeek-Harness.exe") -Force
+
+          $nodeVersion = "22.23.2"
+          $nodeArchiveName = "node-v$nodeVersion-win-x64.zip"
+          $nodeArchive = Join-Path $env:RUNNER_TEMP $nodeArchiveName
+          $nodeExtractRoot = Join-Path $env:RUNNER_TEMP "dsh-node-portable"
+          $nodeDistDir = Join-Path $nodeExtractRoot "node-v$nodeVersion-win-x64"
+          $expectedSha256 = "1177b4137ba5adaa56354ae40f1080c7450e8ae09cecb47da459d1c52ac99f97"
+
+          Remove-Item $nodeExtractRoot -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item $nodeArchive -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $nodeExtractRoot | Out-Null
+
+          $nodeUrl = "https://nodejs.org/dist/v$nodeVersion/$nodeArchiveName"
+          curl.exe --fail --location --retry 5 --retry-delay 3 --output $nodeArchive $nodeUrl
+          if ($LASTEXITCODE -ne 0) { throw "Node.js runtime download failed" }
+
+          $actualSha256 = (Get-FileHash $nodeArchive -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualSha256 -ne $expectedSha256) {
+            throw "Node.js SHA256 mismatch: expected $expectedSha256, got $actualSha256"
+          }
+
+          Expand-Archive -Path $nodeArchive -DestinationPath $nodeExtractRoot -Force
+          Copy-Item (Join-Path $nodeDistDir "*") $runtimeDir -Recurse -Force
+
+          $portableNode = Join-Path $runtimeDir "node.exe"
+          $portableNpm = Join-Path $runtimeDir "npm.cmd"
+          $portableNpx = Join-Path $runtimeDir "npx.cmd"
+          foreach ($required in @($portableNode, $portableNpm, $portableNpx)) {
+            if (-not (Test-Path $required)) { throw "Portable runtime missing: $required" }
+          }
+
+          & $portableNpm install --prefix $serverDir --omit=dev --registry https://registry.npmjs.org "@deepseek-ai/dsh@latest"
+          if ($LASTEXITCODE -ne 0) { throw "Installing @deepseek-ai/dsh failed" }
+
+          $dshBin = Join-Path $serverDir "node_modules/@deepseek-ai/dsh/lib/bin.js"
+          $dshPackage = Join-Path $serverDir "node_modules/@deepseek-ai/dsh/package.json"
+          if (-not (Test-Path $dshBin)) { throw "DSH bin.js missing" }
+          if (-not (Test-Path $dshPackage)) { throw "DSH package.json missing" }
+
+          $embeddedNodeVersion = (& $portableNode -p "process.versions.node").Trim()
+          $embeddedDshVersion = (& $portableNode -p "require(process.argv[1]).version" $dshPackage).Trim()
+          @"
+          DSH-UI Portable
+          Client version: ${{ steps.portable_meta.outputs.tag }}
+          Node.js: $embeddedNodeVersion
+          @deepseek-ai/dsh: $embeddedDshVersion
+          "@ | Set-Content -Path (Join-Path $portableDir "PORTABLE_BUILD_INFO.txt") -Encoding UTF8
+
+          $zipPath = Join-Path $PWD "DeepSeek-Harness-Portable.zip"
+          Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+          tar.exe -a -c -f $zipPath -C $portableDir .
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path $zipPath)) { throw "Portable ZIP creation failed" }
+          if ((Get-Item $zipPath).Length -lt 10MB) { throw "Portable ZIP is unexpectedly small" }
+
+          Write-Host "Portable ZIP ready: $([math]::Round((Get-Item $zipPath).Length / 1MB, 1)) MB"
+          Write-Host "SHA256: $((Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant())"
+
+      - name: Preserve ZIP as Actions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeepSeek-Harness-Portable-${{ steps.portable_meta.outputs.tag }}
+          path: DeepSeek-Harness-Portable.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload ZIP to existing GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.portable_meta.outputs.tag }}
+          files: DeepSeek-Harness-Portable.zip
+          fail_on_unmatched_files: true
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
