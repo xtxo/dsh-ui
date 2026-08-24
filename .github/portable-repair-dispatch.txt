@@ -1,0 +1,1 @@
+v0.1.12 portable repair delegated to canonical Windows Portable workflow.
