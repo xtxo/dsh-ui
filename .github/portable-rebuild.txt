@@ -1,2 +1,3 @@
 v0.1.12 verified rebuild
 Triggered after deterministic Windows Portable workflow fix.
+Retriggered after Windows HWND compatibility fix and Portable status reporting fix.
