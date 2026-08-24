@@ -31,7 +31,12 @@ mod windows_runtime {
         let title = wide(title);
         let message = wide(message);
         unsafe {
-            MessageBoxW(0, message.as_ptr(), title.as_ptr(), flags);
+            MessageBoxW(
+                std::ptr::null_mut(),
+                message.as_ptr(),
+                title.as_ptr(),
+                flags,
+            );
         }
     }
 
