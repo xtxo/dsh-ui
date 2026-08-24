@@ -65,7 +65,7 @@ jobs:
           }
           $statusJson = $status | ConvertTo-Json -Depth 5
           $contentBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($statusJson + "`n"))
-          $existingSha = gh api "repos/$env:GITHUB_REPOSITORY/contents/$statusPath" -f ref=main --jq '.sha' 2>$null
+          $existingSha = gh api --method GET "repos/$env:GITHUB_REPOSITORY/contents/$statusPath?ref=main" --jq '.sha' 2>$null
           $body = [ordered]@{
             message = "ci(portable-status): run $env:RUN_ID started"
             content = $contentBase64
@@ -349,7 +349,7 @@ jobs:
           }
           $statusJson = $status | ConvertTo-Json -Depth 5
           $contentBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($statusJson + "`n"))
-          $existingSha = gh api "repos/$env:GITHUB_REPOSITORY/contents/$statusPath" -f ref=main --jq '.sha' 2>$null
+          $existingSha = gh api --method GET "repos/$env:GITHUB_REPOSITORY/contents/$statusPath?ref=main" --jq '.sha' 2>$null
           $body = [ordered]@{
             message = "ci(portable-status): run $env:RUN_ID $env:JOB_STATUS"
             content = $contentBase64
