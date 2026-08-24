@@ -65,9 +65,7 @@ jobs:
             "src-tauri/target/release/deepseek-harness.exe"
           )
           $exePath = $exeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-          if (-not $exePath) {
-            throw "Windows executable not found after Tauri build"
-          }
+          if (-not $exePath) { throw "Windows executable not found after Tauri build" }
           Write-Host "Using executable: $exePath"
 
           $portableDir = Join-Path $PWD "DeepSeek-Harness-Portable"
@@ -78,8 +76,6 @@ jobs:
           New-Item -ItemType Directory -Force -Path $serverDir | Out-Null
           Copy-Item $exePath (Join-Path $portableDir "DeepSeek-Harness.exe") -Force
 
-          # Keep the portable fallback runtime pinned to the same verified Node.js
-          # version used by DSH-UI's first-launch private-runtime fallback.
           $nodeVersion = "22.23.2"
           $nodeArchiveName = "node-v$nodeVersion-win-x64.zip"
           $nodeArchive = Join-Path $env:RUNNER_TEMP $nodeArchiveName
@@ -92,8 +88,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path $nodeExtractRoot | Out-Null
 
           $nodeUrl = "https://nodejs.org/dist/v$nodeVersion/$nodeArchiveName"
-          Write-Host "Downloading official Node.js runtime: $nodeUrl"
-          Invoke-WebRequest -Uri $nodeUrl -OutFile $nodeArchive -UseBasicParsing
+          curl.exe --fail --location --retry 5 --retry-delay 3 --output $nodeArchive $nodeUrl
+          if ($LASTEXITCODE -ne 0) { throw "Node.js runtime download failed" }
 
           $actualSha256 = (Get-FileHash $nodeArchive -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($actualSha256 -ne $expectedSha256) {
@@ -109,12 +105,29 @@ jobs:
           $portableNode = Join-Path $runtimeDir "node.exe"
           $portableNpm = Join-Path $runtimeDir "npm.cmd"
           $portableNpx = Join-Path $runtimeDir "npx.cmd"
-          if (-not (Test-Path $portableNode)) { throw "Portable node.exe was not created" }
-          if (-not (Test-Path $portableNpm)) { throw "Portable npm.cmd was not created" }
-          if (-not (Test-Path $portableNpx)) { throw "Portable npx.cmd was not created" }
+          foreach ($required in @($portableNode, $portableNpm, $portableNpx)) {
+            if (-not (Test-Path $required)) { throw "Portable runtime missing: $required" }
+          }
 
-          Write-Host "Installing @deepseek-ai/dsh into portable server directory..."
-          & $portableNpm install --prefix $serverDir --omit=dev --registry https://registry.npmjs.org "@deepseek-ai/dsh@latest"
+          # npm's peer resolver can spin indefinitely on DSH 0.1.1-rc.2.
+          # Install the known-good release and its runtime peers in one deterministic
+          # legacy-peer-deps transaction, then run the actual CLI before packaging.
+          $dshVersion = "0.1.1-rc.2"
+          $packageSpecs = @(
+            "@deepseek-ai/dsh@$dshVersion",
+            "@deepseek-ai/cordis-plugin-group@$dshVersion",
+            "@deepseek-ai/cordis-plugin-loader@$dshVersion",
+            "@deepseek-ai/dsh-launch-environment@$dshVersion",
+            "@deepseek-ai/dsh-invariants@$dshVersion",
+            "@deepseek-ai/cordis-plugin-hmr@$dshVersion",
+            "@deepseek-ai/cordis-plugin-include@$dshVersion",
+            "@deepseek-ai/dsh-home-paths@$dshVersion",
+            "@deepseek-ai/dsh-system-prompt@$dshVersion",
+            "@deepseek-ai/cordis@$dshVersion"
+          )
+
+          Write-Host "Installing pinned DeepSeek Harness $dshVersion and required runtime peers..."
+          & $portableNpm install --prefix $serverDir --omit=dev --legacy-peer-deps --no-audit --no-fund --registry https://registry.npmjs.org @packageSpecs
           if ($LASTEXITCODE -ne 0) {
             throw "Portable DeepSeek Harness npm install failed with exit code $LASTEXITCODE"
           }
@@ -124,29 +137,51 @@ jobs:
           if (-not (Test-Path $dshBin)) { throw "Portable DeepSeek Harness bin.js was not created" }
           if (-not (Test-Path $dshPackage)) { throw "Portable DeepSeek Harness package.json was not created" }
 
+          $peerPackages = @(
+            "@deepseek-ai/cordis-plugin-group",
+            "@deepseek-ai/cordis-plugin-loader",
+            "@deepseek-ai/dsh-launch-environment",
+            "@deepseek-ai/dsh-invariants",
+            "@deepseek-ai/cordis-plugin-hmr",
+            "@deepseek-ai/cordis-plugin-include",
+            "@deepseek-ai/dsh-home-paths",
+            "@deepseek-ai/dsh-system-prompt",
+            "@deepseek-ai/cordis"
+          )
+          foreach ($peer in $peerPackages) {
+            $peerManifest = Join-Path $serverDir ("node_modules/" + $peer + "/package.json")
+            if (-not (Test-Path $peerManifest)) { throw "Required DSH runtime peer missing: $peer" }
+          }
+
           $embeddedNodeVersion = (& $portableNode -p "process.versions.node").Trim()
           $embeddedDshVersion = (& $portableNode -p "require(process.argv[1]).version" $dshPackage).Trim()
+          if ($embeddedDshVersion -ne $dshVersion) {
+            throw "Unexpected embedded DSH version: expected $dshVersion, got $embeddedDshVersion"
+          }
+
+          $versionProbe = (& $portableNode $dshBin --version 2>&1 | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0 -or -not $versionProbe) {
+            throw "Embedded DSH CLI self-test failed"
+          }
           Write-Host "Portable Node.js: $embeddedNodeVersion"
           Write-Host "Portable @deepseek-ai/dsh: $embeddedDshVersion"
+          Write-Host "DSH CLI self-test: $versionProbe"
 
           @"
           DSH-UI Portable
           Client version: ${{ steps.release_meta.outputs.tag }}
           Node.js: $embeddedNodeVersion
           @deepseek-ai/dsh: $embeddedDshVersion
+          CLI self-test: $versionProbe
           "@ | Set-Content -Path (Join-Path $portableDir "PORTABLE_BUILD_INFO.txt") -Encoding UTF8
 
           $zipPath = Join-Path $PWD "DeepSeek-Harness-Portable.zip"
           Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
-          & tar.exe -a -c -f $zipPath -C $portableDir .
-          if ($LASTEXITCODE -ne 0 -or -not (Test-Path $zipPath)) {
-            throw "Portable ZIP creation failed"
-          }
+          tar.exe -a -c -f $zipPath -C $portableDir .
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path $zipPath)) { throw "Portable ZIP creation failed" }
 
           $zipItem = Get-Item $zipPath
-          if ($zipItem.Length -lt 10MB) {
-            throw "Portable ZIP is unexpectedly small: $($zipItem.Length) bytes"
-          }
+          if ($zipItem.Length -lt 10MB) { throw "Portable ZIP is unexpectedly small: $($zipItem.Length) bytes" }
           $zipSizeMb = [math]::Round($zipItem.Length / 1MB, 1)
           $zipSha256 = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
           Write-Host "Portable ZIP created: $zipSizeMb MB"
@@ -178,9 +213,7 @@ jobs:
             Write-Host "Release $env:RELEASE_TAG not ready yet; waiting 15 seconds ($attempt/40)..."
             Start-Sleep -Seconds 15
           }
-          if (-not $releaseReady) {
-            throw "Release $env:RELEASE_TAG did not become available within 10 minutes"
-          }
+          if (-not $releaseReady) { throw "Release $env:RELEASE_TAG did not become available within 10 minutes" }
 
           $uploaded = $false
           for ($attempt = 1; $attempt -le 5; $attempt++) {
@@ -192,13 +225,11 @@ jobs:
             }
             Start-Sleep -Seconds (10 * $attempt)
           }
-          if (-not $uploaded) {
-            throw "Failed to upload DeepSeek-Harness-Portable.zip after 5 attempts"
-          }
+          if (-not $uploaded) { throw "Failed to upload DeepSeek-Harness-Portable.zip after 5 attempts" }
 
-          gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --json assets --jq '.assets[].name' | Select-String -SimpleMatch "DeepSeek-Harness-Portable.zip" | Out-Null
-          if ($LASTEXITCODE -ne 0) {
-            throw "Upload command returned success but Portable ZIP is not visible in release assets"
+          $assetNames = gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --json assets --jq '.assets[].name'
+          if ($LASTEXITCODE -ne 0 -or -not ($assetNames -contains "DeepSeek-Harness-Portable.zip")) {
+            throw "Portable ZIP is not visible in release assets after upload"
           }
 
           Write-Host "Portable ZIP is present in release $env:RELEASE_TAG"
