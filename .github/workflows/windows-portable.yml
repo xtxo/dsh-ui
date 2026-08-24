@@ -41,6 +41,42 @@ jobs:
           "tag=$tag" >> $env:GITHUB_OUTPUT
           Write-Host "Portable target release: $tag"
 
+      - name: Publish Portable run start
+        continue-on-error: true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_SHA: ${{ github.sha }}
+          RELEASE_TAG: ${{ steps.release_meta.outputs.tag }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $statusPath = '.github/portable-status.json'
+          $status = [ordered]@{
+            state = 'running'
+            run_id = [long]$env:RUN_ID
+            run_attempt = [int]$env:RUN_ATTEMPT
+            commit_sha = $env:RUN_SHA
+            release_tag = $env:RELEASE_TAG
+            zip_sha256 = $null
+            release_asset_uploaded = $false
+            updated_at = (Get-Date).ToUniversalTime().ToString('o')
+          }
+          $statusJson = $status | ConvertTo-Json -Depth 5
+          $contentBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($statusJson + "`n"))
+          $existingSha = gh api "repos/$env:GITHUB_REPOSITORY/contents/$statusPath" -f ref=main --jq '.sha' 2>$null
+          $body = [ordered]@{
+            message = "ci(portable-status): run $env:RUN_ID started"
+            content = $contentBase64
+            branch = 'main'
+          }
+          if ($LASTEXITCODE -eq 0 -and $existingSha) { $body.sha = $existingSha.Trim() }
+          $bodyPath = Join-Path $env:RUNNER_TEMP 'portable-status-start.json'
+          $body | ConvertTo-Json -Depth 5 | Set-Content -Path $bodyPath -Encoding utf8
+          gh api --method PUT "repos/$env:GITHUB_REPOSITORY/contents/$statusPath" --input $bodyPath | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to publish Portable running status' }
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -247,6 +283,7 @@ jobs:
           retention-days: 14
 
       - name: Wait for GitHub Release and upload Portable ZIP
+        id: release_upload
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -281,5 +318,45 @@ jobs:
           if ($LASTEXITCODE -ne 0 -or -not ($assetNames -contains "DeepSeek-Harness-Portable.zip")) {
             throw "Portable ZIP is not visible in release assets after upload"
           }
-
+          "uploaded=true" >> $env:GITHUB_OUTPUT
           Write-Host "Portable ZIP is present in release $env:RELEASE_TAG"
+
+      - name: Publish Portable final status
+        if: always()
+        continue-on-error: true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_SHA: ${{ github.sha }}
+          RELEASE_TAG: ${{ steps.release_meta.outputs.tag }}
+          JOB_STATUS: ${{ job.status }}
+          ZIP_SHA256: ${{ steps.assemble.outputs.zip_sha256 }}
+          RELEASE_UPLOADED: ${{ steps.release_upload.outputs.uploaded }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $statusPath = '.github/portable-status.json'
+          $status = [ordered]@{
+            state = $env:JOB_STATUS
+            run_id = [long]$env:RUN_ID
+            run_attempt = [int]$env:RUN_ATTEMPT
+            commit_sha = $env:RUN_SHA
+            release_tag = $env:RELEASE_TAG
+            zip_sha256 = if ($env:ZIP_SHA256) { $env:ZIP_SHA256 } else { $null }
+            release_asset_uploaded = ($env:RELEASE_UPLOADED -eq 'true')
+            updated_at = (Get-Date).ToUniversalTime().ToString('o')
+          }
+          $statusJson = $status | ConvertTo-Json -Depth 5
+          $contentBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($statusJson + "`n"))
+          $existingSha = gh api "repos/$env:GITHUB_REPOSITORY/contents/$statusPath" -f ref=main --jq '.sha' 2>$null
+          $body = [ordered]@{
+            message = "ci(portable-status): run $env:RUN_ID $env:JOB_STATUS"
+            content = $contentBase64
+            branch = 'main'
+          }
+          if ($LASTEXITCODE -eq 0 -and $existingSha) { $body.sha = $existingSha.Trim() }
+          $bodyPath = Join-Path $env:RUNNER_TEMP 'portable-status-final.json'
+          $body | ConvertTo-Json -Depth 5 | Set-Content -Path $bodyPath -Encoding utf8
+          gh api --method PUT "repos/$env:GITHUB_REPOSITORY/contents/$statusPath" --input $bodyPath | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to publish Portable final status' }
