@@ -1,0 +1,10 @@
+{
+  "state": "running",
+  "run_id": 32724061999,
+  "run_attempt": 1,
+  "commit_sha": "61edddad01ad5aaf7fc5942738de00d6f7ad6a85",
+  "release_tag": "v0.1.12",
+  "zip_sha256": null,
+  "release_asset_uploaded": false,
+  "updated_at": "2026-08-24T11:52:31.6639509Z"
+}
