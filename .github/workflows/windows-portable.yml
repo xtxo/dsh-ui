@@ -175,7 +175,10 @@ jobs:
             "@deepseek-ai/dsh-timeout",
             "@deepseek-ai/dsh-workflow"
           )
-          $packageSpecs = @("@deepseek-ai/dsh@$dshVersion") + $peerPackages
+          $pinnedPeerSpecs = @($peerPackages | ForEach-Object {
+            if ($_ -like "@deepseek-ai/dsh-*") { "$_@$dshVersion" } else { $_ }
+          })
+          $packageSpecs = @("@deepseek-ai/dsh@$dshVersion") + $pinnedPeerSpecs
 
           Write-Host "Installing pinned DeepSeek Harness $dshVersion plus complete runtime peer set..."
           & $portableNpm install --prefix $serverDir --omit=dev --legacy-peer-deps --no-audit --no-fund --registry https://registry.npmjs.org @packageSpecs
