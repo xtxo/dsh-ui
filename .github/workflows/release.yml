@@ -28,7 +28,9 @@ jobs:
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
             target: 'aarch64-apple-darwin'
-          - platform: 'macos-13'
+          # macos-13 is retired on GitHub-hosted runners; keep Intel builds on the
+          # supported Intel runner so x86_64 DMGs can still be repaired/released.
+          - platform: 'macos-15-intel'
             args: '--target x86_64-apple-darwin'
             target: 'x86_64-apple-darwin'
           - platform: 'ubuntu-22.04'
