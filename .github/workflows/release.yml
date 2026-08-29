@@ -92,13 +92,13 @@ jobs:
             - **Little-whale app icon** across Windows, macOS, Linux and the system tray.
             - **Lightweight Windows installers**: use system Node.js/npx first; if missing, DSH-UI downloads a verified private Node.js runtime on first launch.
             - **Real DeepSeek Harness engine updates**: detects new `@deepseek-ai/dsh` releases, sends a native notification and can update the engine from inside DSH-UI.
-            - **Self-contained Windows Portable ZIP**: includes Node.js, npm/npx and the DeepSeek Harness backend for clean machines.
+            - **Lightweight Windows Portable**: ships only the desktop client; Node.js and `@deepseek-ai/dsh` are downloaded and cached on demand when missing.
             - **More reliable WebView2 setup**: Windows installers embed the Microsoft WebView2 bootstrapper.
             - **Version sync** keeps the client, tray, updater, README and website on the same release number.
 
             ### 📦 Downloads
-            - **Windows Portable**: `.zip` (self-contained, unzip and run)
-            - **Windows Installer**: `.exe` / `.msi` (smaller; smart runtime detection)
+            - **Windows Portable**: `.zip` / standalone `.exe` (small online portable; missing runtime components are downloaded on first launch)
+            - **Windows Installer**: `.exe` / `.msi` (smart runtime detection)
             - **macOS (Apple Silicon M1/M2/M3/M4)**: `.dmg` (`aarch64`)
             - **macOS (Intel)**: `.dmg` (`x86_64`)
             - **Linux**: `.deb` / `.AppImage`
