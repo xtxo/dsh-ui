@@ -107,8 +107,6 @@ pub async fn download_file(
     app: AppHandle,
     params: DownloadFileParams,
 ) -> Result<(), String> {
-    // Toast on the calling window (secondary windows included), not a hard-coded
-    // main-window label. Tauri injects the invoker as `window`.
     show_toast(
         &window,
         &get_download_message_with_lang(MessageType::Start, params.language.clone()),
@@ -120,9 +118,7 @@ pub async fn download_file(
         .map_err(|e| format!("Failed to get download dir: {}", e))?;
 
     let output_path = download_dir.join(sanitize_download_filename(&params.filename));
-
     let path_str = output_path.to_str().ok_or("Invalid output path")?;
-
     let file_path = check_file_or_append(path_str);
 
     let client = ClientBuilder::new()
@@ -130,7 +126,6 @@ pub async fn download_file(
         .map_err(|e| format!("Failed to build client: {}", e))?;
 
     let url = Url::from_str(&params.url).map_err(|e| format!("Invalid URL: {}", e))?;
-
     let mut request = Request::new(Method::GET, url.clone());
     if let Some(cookie_header) = cookie_header_for_url(&window, &url) {
         request.headers_mut().insert(COOKIE, cookie_header);
@@ -140,8 +135,6 @@ pub async fn download_file(
 
     match response {
         Ok(mut res) => {
-            // Transport success is not download success: 403/404 HTML error pages
-            // must not be written as files or toasted as successful downloads.
             if !res.status().is_success() {
                 show_toast(
                     &window,
@@ -231,10 +224,6 @@ pub async fn update_theme_mode(app: AppHandle, mode: String) {
     }
 }
 
-// Apply native WebView zoom (WKWebView pageZoom / WebView2 ZoomFactor / WebKitGTK
-// zoom level) instead of CSS hacks. CSS `transform: scale` and `html.style.zoom`
-// break complex SPAs like ChatGPT (fixed positioning shifts, unrepainted layers);
-// native zoom recalculates layout the same way a browser does for Cmd/Ctrl +/-.
 #[command]
 pub fn set_zoom(window: WebviewWindow, percent: f64) -> Result<(), String> {
     let factor = (percent / 100.0).clamp(0.3, 2.0);
@@ -243,9 +232,6 @@ pub fn set_zoom(window: WebviewWindow, percent: f64) -> Result<(), String> {
         .map_err(|e| format!("Failed to set zoom: {}", e))
 }
 
-/// Native navigation for injected shortcuts (Linux/Windows Ctrl+R / [ / ]).
-/// Also owns the internal engine-update action so the updater can reuse an
-/// already-registered Tauri command instead of exposing a second command surface.
 #[command]
 pub async fn webview_navigate(window: WebviewWindow, action: String) -> Result<String, String> {
     match action.as_str() {
@@ -262,7 +248,7 @@ pub async fn webview_navigate(window: WebviewWindow, action: String) -> Result<S
             Ok("ok".to_string())
         }
         "update_engine" => {
-            let message = tokio::task::spawn_blocking(crate::app::setup::update_dsh_engine)
+            let message = tokio::task::spawn_blocking(crate::app::engine_update::update_dsh_engine)
                 .await
                 .map_err(|error| format!("内核更新任务异常结束: {error}"))??;
 
