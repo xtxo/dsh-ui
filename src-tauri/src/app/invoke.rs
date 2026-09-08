@@ -232,6 +232,67 @@ pub fn set_zoom(window: WebviewWindow, percent: f64) -> Result<(), String> {
         .map_err(|e| format!("Failed to set zoom: {}", e))
 }
 
+fn start_engine_progress_ui(window: &WebviewWindow) {
+    let script = r#"
+(function () {
+  if (window.__dshEngineProgressTimer) {
+    clearInterval(window.__dshEngineProgressTimer);
+  }
+  const startedAt = Date.now();
+  const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>\"]/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'
+  }[ch]));
+
+  const render = progress => {
+    const result = document.getElementById('dsh-engine-update-result') || document.getElementById('dsh-check-status');
+    const button = document.getElementById('dsh-engine-update-now') || document.getElementById('dsh-btn-hot-reload');
+    if (!result) return;
+
+    const percent = Math.max(0, Math.min(100, Number(progress.percent) || 0));
+    const elapsed = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+    const success = progress.success === true;
+    const failed = progress.done && progress.success === false;
+    const accent = failed ? '#f87171' : (success ? '#34d399' : '#60a5fa');
+
+    result.style.color = '#cbd5e1';
+    result.innerHTML =
+      '<div style="margin-top:8px;">' +
+        '<div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;font-size:11px;">' +
+          '<span style="color:' + accent + ';font-weight:700;">' + escapeHtml(progress.stage) + '</span>' +
+          '<span style="color:#94a3b8;white-space:nowrap;">' + percent + '% · ' + elapsed + ' 秒</span>' +
+        '</div>' +
+        '<div style="height:7px;background:rgba(148,163,184,.18);border-radius:999px;overflow:hidden;">' +
+          '<div style="height:100%;width:' + percent + '%;background:' + accent + ';border-radius:999px;transition:width .35s ease;"></div>' +
+        '</div>' +
+        '<div style="margin-top:7px;color:' + (failed ? '#fca5a5' : '#94a3b8') + ';font-size:11px;line-height:1.5;word-break:break-word;">' +
+          escapeHtml(progress.detail) +
+        '</div>' +
+      '</div>';
+
+    if (button && !progress.done) {
+      button.textContent = '更新中 ' + percent + '%';
+    }
+  };
+
+  const poll = async () => {
+    try {
+      const raw = await window.__TAURI__.core.invoke('webview_navigate', { action: 'engine_update_status' });
+      const progress = JSON.parse(String(raw || '{}'));
+      render(progress);
+      if (progress.done && window.__dshEngineProgressTimer) {
+        clearInterval(window.__dshEngineProgressTimer);
+        window.__dshEngineProgressTimer = null;
+      }
+    } catch (_) {}
+  };
+
+  poll();
+  window.__dshEngineProgressTimer = setInterval(poll, 500);
+})();
+"#;
+    let _ = window.eval(script);
+}
+
 #[command]
 pub async fn webview_navigate(window: WebviewWindow, action: String) -> Result<String, String> {
     match action.as_str() {
@@ -247,8 +308,10 @@ pub async fn webview_navigate(window: WebviewWindow, action: String) -> Result<S
             history_step(&window, false);
             Ok("ok".to_string())
         }
+        "engine_update_status" => Ok(crate::app::engine_update::progress_json()),
         "update_engine" => {
-            let message = tokio::task::spawn_blocking(crate::app::engine_update::update_dsh_engine)
+            start_engine_progress_ui(&window);
+            let message = tauri::async_runtime::spawn_blocking(crate::app::engine_update::update_dsh_engine)
                 .await
                 .map_err(|error| format!("内核更新任务异常结束: {error}"))??;
 
@@ -263,7 +326,7 @@ pub async fn webview_navigate(window: WebviewWindow, action: String) -> Result<S
             Ok(message)
         }
         other => Err(format!(
-            "Unknown webview_navigate action '{other}' (expected reload|back|forward|update_engine)"
+            "Unknown webview_navigate action '{other}' (expected reload|back|forward|engine_update_status|update_engine)"
         )),
     }
 }
