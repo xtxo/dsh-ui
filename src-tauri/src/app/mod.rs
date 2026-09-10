@@ -8,4 +8,7 @@ pub mod menu;
 pub mod navigation;
 pub mod setup;
 pub mod window;
+#[path = "backend.rs"]
+pub mod legacy_backend;
+#[path = "backend_fixed.rs"]
 pub mod backend;
