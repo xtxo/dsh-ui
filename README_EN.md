@@ -51,15 +51,15 @@
 
 ## 📥 Download
 
-Visit [GitHub Releases (v0.1.16)](https://github.com/xtxo/dsh-ui/releases/tag/v0.1.16) or click below to download directly:
+Visit [GitHub Releases (v0.1.17)](https://github.com/xtxo/dsh-ui/releases/tag/v0.1.17) or click below to download directly:
 
 | Platform | Direct Download | Architecture |
 | :--- | :--- | :--- |
-| **macOS (Apple Silicon)** | 🍏 [**DeepSeek.Harness_0.1.16_aarch64.dmg**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.16/DeepSeek.Harness_0.1.16_aarch64.dmg) | M1 / M2 / M3 / M4 Macs |
-| **Windows Portable (Recommended)** | 🟢 [**DeepSeek-Harness-Portable.zip**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.16/DeepSeek-Harness-Portable.zip) | No installation required; download and run |
-| **Windows Setup** | 🪟 [**DeepSeek.Harness_0.1.16_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.16/DeepSeek.Harness_0.1.16_x64-setup.exe) | Windows 10 / 11 64-bit installer for regular users |
-| **Windows MSI (Chinese)** | 🪟 [**DeepSeek.Harness_0.1.16_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.16/DeepSeek.Harness_0.1.16_x64_zh-CN.msi) | WiX MSI installer for enterprise/silent deployment |
-| **Windows MSI (English)** | 🪟 [**DeepSeek.Harness_0.1.16_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.16/DeepSeek.Harness_0.1.16_x64_en-US.msi) | WiX MSI installer for enterprise/silent deployment |
+| **macOS (Apple Silicon)** | 🍏 [**DeepSeek.Harness_0.1.17_aarch64.dmg**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.17/DeepSeek.Harness_0.1.17_aarch64.dmg) | M1 / M2 / M3 / M4 Macs |
+| **Windows Portable (Recommended)** | 🟢 [**DeepSeek-Harness-Portable.zip**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.17/DeepSeek-Harness-Portable.zip) | No installation required; download and run |
+| **Windows Setup** | 🪟 [**DeepSeek.Harness_0.1.17_x64-setup.exe**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.17/DeepSeek.Harness_0.1.17_x64-setup.exe) | Windows 10 / 11 64-bit installer for regular users |
+| **Windows MSI (Chinese)** | 🪟 [**DeepSeek.Harness_0.1.17_x64_zh-CN.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.17/DeepSeek.Harness_0.1.17_x64_zh-CN.msi) | WiX MSI installer for enterprise/silent deployment |
+| **Windows MSI (English)** | 🪟 [**DeepSeek.Harness_0.1.17_x64_en-US.msi**](https://github.com/xtxo/dsh-ui/releases/download/v0.1.17/DeepSeek.Harness_0.1.17_x64_en-US.msi) | WiX MSI installer for enterprise/silent deployment |
 
 ---
 
