@@ -13,4 +13,6 @@ pub mod legacy_backend;
 #[path = "backend_fixed.rs"]
 pub mod windows_backend;
 #[path = "backend_auth.rs"]
+pub mod backend_base;
+#[path = "backend_display.rs"]
 pub mod backend;
