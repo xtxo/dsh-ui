@@ -1,8 +1,8 @@
 {
   "windows": [
     {
-      "url": "http://127.0.0.1:3080",
-      "url_type": "web",
+      "url": "index.html",
+      "url_type": "local",
       "hide_title_bar": false,
       "hide_window_decorations": false,
       "fullscreen": false,
