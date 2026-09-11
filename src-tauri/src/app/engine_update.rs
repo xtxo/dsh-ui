@@ -210,37 +210,42 @@ fn npx_engine_prefixes() -> Vec<PathBuf> {
     prefixes
 }
 
-fn global_engine_package_json() -> Option<PathBuf> {
-    // Ask the same npm runtime used for updating so nvm/fnm/private Node prefixes
-    // are resolved correctly instead of assuming a single global directory.
+fn global_engine_prefix() -> Option<PathBuf> {
+    // Windows' ordinary global npm CLI lives below %APPDATA%\npm. Check that
+    // concrete installation first so a private Node runtime cannot redirect the
+    // updater to a different global prefix.
+    #[cfg(target_os = "windows")]
+    if let Some(appdata) = env::var_os("APPDATA") {
+        let package_json = PathBuf::from(appdata)
+            .join("npm")
+            .join("node_modules")
+            .join("@deepseek-ai")
+            .join("dsh")
+            .join("package.json");
+        if package_json.exists() {
+            if let Some(prefix) = package_install_prefix(&package_json) {
+                return Some(prefix);
+            }
+        }
+    }
+
+    // Also support nvm/fnm and non-Windows global installations by asking the
+    // active npm where its global package root is, then updating that exact root.
     if let Ok(mut command) = npm_command() {
         command.args(["root", "-g"]);
         if let Ok(output) = command.output() {
             if output.status.success() {
                 let root = String::from_utf8_lossy(&output.stdout).trim().to_string();
                 if !root.is_empty() {
-                    let candidate = PathBuf::from(root)
+                    let package_json = PathBuf::from(root)
                         .join("@deepseek-ai")
                         .join("dsh")
                         .join("package.json");
-                    if candidate.exists() {
-                        return Some(candidate);
+                    if package_json.exists() {
+                        return package_install_prefix(&package_json);
                     }
                 }
             }
-        }
-    }
-
-    #[cfg(target_os = "windows")]
-    if let Some(appdata) = env::var_os("APPDATA") {
-        let candidate = PathBuf::from(appdata)
-            .join("npm")
-            .join("node_modules")
-            .join("@deepseek-ai")
-            .join("dsh")
-            .join("package.json");
-        if candidate.exists() {
-            return Some(candidate);
         }
     }
 
@@ -312,44 +317,6 @@ fn install_latest_into_prefix(prefix: &Path) -> Result<String, String> {
     })
 }
 
-fn install_latest_global() -> Result<String, String> {
-    let mut command = npm_command()?;
-    command.args([
-        "install",
-        "-g",
-        "--omit=dev",
-        "--no-audit",
-        "--no-fund",
-        "--registry",
-        ENGINE_REGISTRY,
-        "@deepseek-ai/dsh@latest",
-    ]);
-
-    let output = command
-        .output()
-        .map_err(|error| format!("无法启动 npm 更新全局内核: {error}"))?;
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
-        let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
-        let details = if !stderr.is_empty() { stderr } else { stdout };
-        return Err(if details.is_empty() {
-            "全局 @deepseek-ai/dsh 更新失败".to_string()
-        } else {
-            format!("全局 @deepseek-ai/dsh 更新失败：{details}")
-        });
-    }
-
-    let package_json = global_engine_package_json().ok_or_else(|| {
-        "npm 全局更新已执行完成，但无法定位更新后的 @deepseek-ai/dsh".to_string()
-    })?;
-    read_engine_version(&package_json).ok_or_else(|| {
-        format!(
-            "npm 全局更新已执行完成，但无法读取更新后的 @deepseek-ai/dsh 版本（{}）",
-            package_json.display()
-        )
-    })
-}
-
 fn update_dsh_engine_inner() -> Result<String, String> {
     set_progress(5, "定位 npm 运行环境", "正在检查 Node.js 与 npm...", false, None);
     let npm_version = probe_npm_version()?;
@@ -361,25 +328,30 @@ fn update_dsh_engine_inner() -> Result<String, String> {
         false,
         None,
     );
-    let prefixes = npx_engine_prefixes();
-    let global_package = global_engine_package_json();
-    let has_global = global_package.is_some();
 
-    if prefixes.is_empty() && !has_global {
+    let mut targets = npx_engine_prefixes();
+    let global_prefix = global_engine_prefix();
+    if let Some(prefix) = &global_prefix {
+        if !targets.iter().any(|target| target == prefix) {
+            targets.push(prefix.clone());
+        }
+    }
+
+    if targets.is_empty() {
         return Err(
             "没有找到当前 DeepSeek Harness 安装或 npx/Portable 缓存。请先正常启动一次 DSH-UI，让内核完成首次下载后再更新。"
                 .to_string(),
         );
     }
 
-    let total = prefixes.len() + usize::from(has_global);
+    let total = targets.len();
     set_progress(
         25,
         "准备更新",
         format!(
             "找到 {} 个内核目标{}，准备同步到最新版",
             total,
-            if has_global { "（包含全局安装）" } else { "" }
+            if global_prefix.is_some() { "（包含全局安装）" } else { "" }
         ),
         false,
         None,
@@ -387,32 +359,16 @@ fn update_dsh_engine_inner() -> Result<String, String> {
 
     let mut versions = Vec::new();
     let mut failures = Vec::new();
-    let mut completed = 0usize;
 
-    if has_global {
-        let percent = 35 + ((completed * 50) / total.max(1)) as u8;
+    for (index, prefix) in targets.iter().enumerate() {
+        let percent = 35 + ((index * 50) / total.max(1)) as u8;
+        let is_global = global_prefix.as_ref().is_some_and(|global| global == prefix);
         set_progress(
             percent,
-            "更新全局内核",
-            "检测到 Windows/npm 全局 DeepSeek Harness，正在更新...",
-            false,
-            None,
-        );
-        match install_latest_global() {
-            Ok(version) => versions.push(version),
-            Err(error) => failures.push(error),
-        }
-        completed += 1;
-    }
-
-    for prefix in &prefixes {
-        let percent = 35 + ((completed * 50) / total.max(1)) as u8;
-        set_progress(
-            percent,
-            "下载安装最新内核",
+            if is_global { "更新全局内核" } else { "下载安装最新内核" },
             format!(
                 "正在更新第 {}/{} 个目标：{}",
-                completed + 1,
+                index + 1,
                 total,
                 prefix.display()
             ),
@@ -424,7 +380,6 @@ fn update_dsh_engine_inner() -> Result<String, String> {
             Ok(version) => versions.push(version),
             Err(error) => failures.push(error),
         }
-        completed += 1;
     }
 
     set_progress(88, "校验更新结果", "正在核对所有本地内核版本...", false, None);
