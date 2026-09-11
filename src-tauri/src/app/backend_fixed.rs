@@ -114,9 +114,11 @@ fn authenticated_dsh_url(line: &str) -> Option<Url> {
         .next()?;
     let url = Url::parse(candidate).ok()?;
 
+    // Modern DSH may run on 3080 or an OS-assigned fallback port. Only accept
+    // explicit loopback HTTP URLs carrying the per-process launch token.
     let is_loopback = url.scheme() == "http"
         && url.host_str() == Some("127.0.0.1")
-        && url.port_or_known_default() == Some(3080);
+        && url.port().is_some();
     let has_token = url
         .query_pairs()
         .any(|(key, value)| key == "token" && !value.is_empty());
@@ -234,6 +236,7 @@ pub fn start_backend_service_if_needed(
 
     perform_update_check(&window, false);
 
+    let mut use_ephemeral_port = false;
     if is_backend_running(TARGET_PORT) {
         println!("[DeepSeek Harness] Backend is already running on port {TARGET_PORT}");
 
@@ -250,12 +253,16 @@ pub fn start_backend_service_if_needed(
                 tokio::time::sleep(Duration::from_millis(1200)).await;
                 let _ = win.eval(get_injected_updater_script());
             });
-        } else {
-            eprintln!(
-                "[DeepSeek Harness] Port 3080 is authenticated by another dsh process; DSH-UI cannot recover that process launch token."
-            );
+            return;
         }
-        return;
+
+        // Do not kill a user's independently started dsh process. Start an isolated
+        // DSH-UI-owned instance on an OS-assigned loopback port and authenticate the
+        // embedded WebView with that process's own launch token.
+        eprintln!(
+            "[DeepSeek Harness] Port 3080 is occupied by an authenticated dsh process without a reusable WebView cookie; starting an isolated DSH-UI backend on an OS-assigned port."
+        );
+        use_ephemeral_port = true;
     }
 
     let dsh_cli = find_dsh_cli();
@@ -269,16 +276,23 @@ pub fn start_backend_service_if_needed(
         command
             .arg(dsh_path.to_str().unwrap_or("dsh"))
             .args(["web", "--no-open"]);
+        if use_ephemeral_port {
+            command.args(["--port", "0"]);
+        }
     } else if let Some(ref script) = cached_script {
         println!("[DeepSeek Harness] Fast boot from cached script: {:?}", script);
         command
             .arg("node")
             .arg(script.to_str().unwrap_or_default())
             .args(["web", "--no-open"]);
+        if use_ephemeral_port {
+            command.args(["--port", "0"]);
+        }
     } else {
         println!("[DeepSeek Harness] First run: downloading via npx @deepseek-ai/dsh web...");
+        let port_arg = if use_ephemeral_port { " --port 0" } else { "" };
         command.arg(format!(
-            "npx --registry={NPM_MIRROR_REGISTRY} -y @deepseek-ai/dsh web --no-open"
+            "npx --registry={NPM_MIRROR_REGISTRY} -y @deepseek-ai/dsh web --no-open{port_arg}"
         ));
     }
 
@@ -286,14 +300,18 @@ pub fn start_backend_service_if_needed(
 
     // Readiness fallback. Modern DSH is authenticated: wait for stdout's token
     // URL and never replace it with a naked / request (which is a guaranteed 401).
-    // Legacy DSH versions had a public root, so they can still be opened after
-    // the port becomes ready. Keep watching for ten minutes to cover slow first-run
-    // npm downloads on clean Windows machines.
+    // For the normal 3080 path, legacy DSH versions can still be opened after the
+    // port becomes ready. When 3080 belongs to another authenticated process and
+    // DSH-UI uses --port 0, only the captured token URL identifies our actual port.
     tauri::async_runtime::spawn(async move {
         for attempt in 1..=2400 {
             tokio::time::sleep(Duration::from_millis(250)).await;
             if auth_seen.load(Ordering::Acquire) {
                 return;
+            }
+
+            if use_ephemeral_port {
+                continue;
             }
             if !is_backend_running(TARGET_PORT) {
                 continue;
